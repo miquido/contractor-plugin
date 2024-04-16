@@ -1,9 +1,9 @@
 package com.miquido.plugin.openapi.configuration
 
-import com.miquido.plugin.openapi.model.ContractData
+import com.miquido.plugin.openapi.model.OpenApiSpecification
 
 open class OpenApiGeneratorConfiguration {
-    var contracts: List<ContractData> = listOf()
+    var contracts: List<OpenApiSpecification> = listOf()
     var local: LocalConfiguration? = null
     var repository: RepositoryConfiguration? = null
 }

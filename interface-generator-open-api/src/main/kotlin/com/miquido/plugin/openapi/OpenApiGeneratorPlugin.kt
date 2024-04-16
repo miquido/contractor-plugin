@@ -4,8 +4,10 @@
 package com.miquido.plugin.openapi
 
 import com.miquido.plugin.openapi.configuration.OpenApiGeneratorConfiguration
-import com.miquido.plugin.openapi.model.ContractData
-import com.miquido.plugin.openapi.model.ContractLocalization
+import com.miquido.plugin.openapi.model.LocalOpenApiSpecification
+import com.miquido.plugin.openapi.model.OpenApiLocalization
+import com.miquido.plugin.openapi.model.OpenApiSpecification
+import com.miquido.plugin.openapi.model.RemoteOpenApiSpecification
 import com.miquido.plugin.openapi.task.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -59,21 +61,21 @@ open class OpenApiGeneratorPlugin : Plugin<Project> {
         }
     }
 
-    private fun createContractFileTask(project: Project, contract: ContractData) {
-        if (contract.localization == ContractLocalization.REPOSITORY) {
+    private fun createContractFileTask(project: Project, contract: OpenApiSpecification) {
+        if (contract.localization == OpenApiLocalization.REMOTE) {
             project.tasks.register(
                 contract.downloadTaskName,
                 Download::class.java,
-                download(configuration.repository, contract)
+                download(configuration.repository, contract as RemoteOpenApiSpecification)
             )
             project.tasks.named(contract.downloadTaskName) {
                 it.dependsOn(project.tasks.named(copyResourcesTaskName))
             }
-        } else if (contract.localization == ContractLocalization.LOCAL) {
+        } else if (contract.localization == OpenApiLocalization.LOCAL) {
             project.tasks.register(
                 contract.copyTaskName,
                 Copy::class.java,
-                copy(configuration.local, contract)
+                copy(configuration.local, contract as LocalOpenApiSpecification)
             )
             project.tasks.named(contract.copyTaskName) {
                 it.dependsOn(project.tasks.named(copyResourcesTaskName))
@@ -81,16 +83,16 @@ open class OpenApiGeneratorPlugin : Plugin<Project> {
         }
     }
 
-    private fun createGenerateInterfacesTask(project: Project, contract: ContractData) =
+    private fun createGenerateInterfacesTask(project: Project, contract: OpenApiSpecification) =
         project.tasks.register(contract.generateTaskName, GenerateTask::class.java, generateInterfaceTask(contract))
 
 
-    private fun addDependencies(contract: ContractData, project: Project) {
-        if (contract.localization == ContractLocalization.REPOSITORY) {
+    private fun addDependencies(contract: OpenApiSpecification, project: Project) {
+        if (contract.localization == OpenApiLocalization.REMOTE) {
             project.tasks.named(contract.generateTaskName) {
                 it.dependsOn(contract.downloadTaskName)
             }
-        } else if (contract.localization == ContractLocalization.LOCAL) {
+        } else if (contract.localization == OpenApiLocalization.LOCAL) {
             project.tasks.named(contract.generateTaskName) {
                 it.dependsOn(contract.copyTaskName)
             }

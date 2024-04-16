@@ -6,7 +6,6 @@ object Constant {
     const val specificationDir = "build/generated/interface-generator/specification"
     const val interfaceDir = "build/generated/interface-generator/api/"
     const val tempDirectoryName = "temp"
-    const val specificationFileName = "spec.yaml"
 
     // https://openapi-generator.tech/docs/generators/kotlin/
     // https://openapi-generator.tech/docs/generators/kotlin-spring/
