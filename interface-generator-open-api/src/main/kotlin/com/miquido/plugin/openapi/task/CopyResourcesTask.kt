@@ -21,7 +21,7 @@ fun copyResourcesTask(): Copy.() -> Unit = {
                 }
             }
 
-        from(project.layout.projectDirectory.dir("/$tempDirectoryName"))
-        into(project.layout.projectDirectory.dir(configurationDir))
+        from(project.layout.projectDirectory.dir("./$tempDirectoryName"))
+        into(project.layout.projectDirectory.dir("./$configurationDir"))
     }
 }
