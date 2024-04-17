@@ -1,12 +1,16 @@
 package com.miquido.plugin.openapi.task
 
 import com.miquido.plugin.openapi.Constant
+import com.miquido.plugin.openapi.configuration.OpenApiGeneratorConfiguration
 import com.miquido.plugin.openapi.model.OpenApiSpecification
 import org.gradle.api.plugins.JavaPlugin
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
-fun generateInterfaceTask(s: OpenApiSpecification): GenerateTask.() -> Unit = {
+fun generateInterfaceTask(
+    configuration: OpenApiGeneratorConfiguration,
+    s: OpenApiSpecification
+): GenerateTask.() -> Unit = {
     Constant.run {
         group = JavaPlugin.CLASSES_TASK_NAME
         generatorName.set("kotlin-spring")
@@ -15,7 +19,7 @@ fun generateInterfaceTask(s: OpenApiSpecification): GenerateTask.() -> Unit = {
         apiPackage.set("${s.basePackage}.api")
         modelPackage.set("${s.basePackage}.dto")
         configOptions.set(
-            openApiProperties + mapOf("basePackage" to s.basePackage)
+            openApiProperties + configuration.openApiConfiguration + mapOf("basePackage" to s.basePackage)
         )
         project.extensions.getByType(KotlinJvmProjectExtension::class.java).sourceSets.getByName("main")
             .kotlin.srcDir(project.layout.projectDirectory.dir("$interfaceDir/${s.path}/src/main/kotlin"))

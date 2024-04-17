@@ -25,7 +25,7 @@ fun download(configuration: RepositoryConfiguration?, specification: RemoteOpenA
 
 private fun getGitlabUrl(projectId: String, spec: RemoteOpenApiSpecification): String {
     Constant.run {
-        val basePath = "https://gitlab.com/api/v4/projects/${projectId}/repository/files"
+        val basePath = "${spec.baseUrl}/api/v4/projects/${projectId}/repository/files"
         val arguments = URLEncoder.encode("${spec.path}/${spec.fileName}", "utf-8") + "/raw?ref=${spec.branch}"
         return "$basePath/$arguments"
     }

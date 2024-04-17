@@ -84,8 +84,11 @@ open class OpenApiGeneratorPlugin : Plugin<Project> {
     }
 
     private fun createGenerateInterfacesTask(project: Project, contract: OpenApiSpecification) =
-        project.tasks.register(contract.generateTaskName, GenerateTask::class.java, generateInterfaceTask(contract))
-
+        project.tasks.register(
+            contract.generateTaskName,
+            GenerateTask::class.java,
+            generateInterfaceTask(configuration, contract)
+        )
 
     private fun addDependencies(contract: OpenApiSpecification, project: Project) {
         if (contract.localization == OpenApiLocalization.REMOTE) {
