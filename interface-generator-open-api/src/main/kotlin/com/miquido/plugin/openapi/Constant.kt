@@ -2,9 +2,10 @@ package com.miquido.plugin.openapi
 
 
 object Constant {
-    const val configurationDir = "build/generated/interface-generator/plugin/configuration"
-    const val specificationDir = "build/generated/interface-generator/specification"
-    const val interfaceDir = "build/generated/interface-generator/api/"
+    const val rootDir = "build/generated/api-generator"
+    const val configurationDir = "$rootDir/configuration"
+    const val specificationDir = "$rootDir/specification"
+    const val interfaceDir = "$rootDir/"
     const val tempDirectoryName = "temp"
 
     // https://openapi-generator.tech/docs/generators/kotlin/
