@@ -2,6 +2,12 @@
 
 Gradle plugin to generate API interfaces based by OpenAPI specification from local or remote directory.
 
+## Build
+
+Due to compile and deploy plugin to local repository, type following instruction:
+
+`./gradlew clean publishToMavenLocal`
+
 ## Usage
 
 Add plugin with clause:
