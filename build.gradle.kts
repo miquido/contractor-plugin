@@ -55,6 +55,7 @@ gradlePlugin {
 publishing {
     repositories {
         maven {
+            name = "sonatype"
             url = URI("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
                 username = findProperty("sonatype.user") as String?
@@ -62,4 +63,8 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    sign(publishing.publications)
 }
