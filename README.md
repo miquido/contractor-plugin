@@ -1,12 +1,6 @@
-# API Interface Generator based by OpenAPI
+# Contractor Plugin
 
-Gradle plugin to generate API interfaces based by OpenAPI specification from local or remote directory.
-
-## Build
-
-Due to compile and deploy plugin to local repository, type following instruction:
-
-`./gradlew clean publishToMavenLocal`
+Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects.
 
 ## Usage
 
@@ -14,7 +8,7 @@ Add plugin with clause:
 
 ```
 plugins {
-  id("interface-generator-open-api") version "1.0.0"
+  id("contractor-plugin") version "X.X.X"
 }
 ```
 
@@ -33,28 +27,28 @@ be `local` or `repository`.
 Example:
 
 ```
-configure<OpenApiGeneratorConfiguration> {
+configure<ContractorConfiguration> {
     contracts = listOf(
         RemoteOpenApiSpecification("spec.yaml", "org.example", "bank", "clients", "v1"),
         LocalOpenApiSpecification("spec.yaml", "org.example", "bank", "cards", "v1")
     )
-    local = LocalConfiguration(relativePath = "../poc-contract-first-open-api")
+    local = LocalConfiguration(relativePath = "../contracts")
     repository = GitlabConfiguration(projectId = "123123", accessToken = "gitlabToken")
     openApiConfiguration = mapOf("useTags" to "false") // override default settings
 }
 
 ```
 
-Parameter table
+Parameter table:
 
-| Parameter            | Description                                                                                                                                                                                    |   
+| Parameter            | Description                                                                                                                                                                                    |
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | contracts            | Specified by class `RemoteOpenApiSpecification` or `LocalOpenApiSpecification`. Every definied contract creates specification with interfaces.                                                 |
 | local                | Specifies local path to OpenAPI repository. Must be set due to `LocalOpenApiSpecification` class.                                                                                              |
 | repository           | Specifies remote repository with OpenAPI files. Gitlab is currently supported repository. Must be set due to `RemoteOpenApiSpecification`.                                                     |
 | openApiConfiguration | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/. |
 
-Class table
+Class table:
 
 | Class name                 | Description                                                                                                                                                                                            |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
