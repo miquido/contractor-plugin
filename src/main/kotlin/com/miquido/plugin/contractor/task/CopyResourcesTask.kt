@@ -1,8 +1,9 @@
-package com.miquido.plugin.openapi.task
+package com.miquido.plugin.contractor.task
 
-import com.miquido.plugin.openapi.Constant
-import org.gradle.api.tasks.Copy
+import com.miquido.contractor_plugin.BuildConfig
+import com.miquido.plugin.contractor.Constant
 import java.io.File
+import org.gradle.api.tasks.Copy
 
 fun copyResourcesTask(): Copy.() -> Unit = {
     Constant.run {
@@ -10,8 +11,8 @@ fun copyResourcesTask(): Copy.() -> Unit = {
             mkdirs()
         }
 
-        // TODO: copy all resources + extract plugin ID
-        project.plugins.getPlugin("interface-generator-open-api")
+        // TODO: copy all resources
+        project.plugins.getPlugin(BuildConfig.APP_NAME)
             .javaClass
             .classLoader
             .getResourceAsStream("configuration/apiInterface.mustache")

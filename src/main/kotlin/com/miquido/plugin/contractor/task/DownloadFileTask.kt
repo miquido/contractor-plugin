@@ -1,9 +1,9 @@
-package com.miquido.plugin.openapi.task
+package com.miquido.plugin.contractor.task
 
-import com.miquido.plugin.openapi.Constant
-import com.miquido.plugin.openapi.configuration.GitlabConfiguration
-import com.miquido.plugin.openapi.configuration.RepositoryConfiguration
-import com.miquido.plugin.openapi.model.RemoteOpenApiSpecification
+import com.miquido.plugin.contractor.Constant
+import com.miquido.plugin.contractor.configuration.GitlabConfiguration
+import com.miquido.plugin.contractor.configuration.RepositoryConfiguration
+import com.miquido.plugin.contractor.model.RemoteOpenApiSpecification
 import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Download
 import java.net.URLEncoder
 

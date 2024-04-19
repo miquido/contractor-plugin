@@ -1,8 +1,8 @@
-package com.miquido.plugin.openapi.task
+package com.miquido.plugin.contractor.task
 
-import com.miquido.plugin.openapi.Constant
-import com.miquido.plugin.openapi.configuration.LocalConfiguration
-import com.miquido.plugin.openapi.model.OpenApiSpecification
+import com.miquido.plugin.contractor.Constant
+import com.miquido.plugin.contractor.configuration.LocalConfiguration
+import com.miquido.plugin.contractor.model.OpenApiSpecification
 import org.gradle.api.tasks.Copy
 
 fun copy(localConfiguration: LocalConfiguration?, specification: OpenApiSpecification): Copy.() -> Unit = {

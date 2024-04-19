@@ -7,6 +7,7 @@
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
     id("maven-publish")
     id("java-gradle-plugin")
 }
@@ -16,6 +17,10 @@ version = "1.0.0"
 
 repositories {
     mavenCentral()
+}
+
+buildConfig {
+    buildConfigField("APP_NAME", project.name)
 }
 
 dependencies {
@@ -33,9 +38,9 @@ kotlin {
 
 gradlePlugin {
     plugins {
-        create("interfaceGeneratorOpenApi") {
-            id = "interface-generator-open-api"
-            implementationClass = "com.miquido.plugin.openapi.OpenApiGeneratorPlugin"
+        create("contractorPlugin") {
+            id = "contractor-plugin"
+            implementationClass = "com.miquido.plugin.contractor.ContractorPlugin"
         }
     }
 }

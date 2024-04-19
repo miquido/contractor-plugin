@@ -1,14 +1,14 @@
-package com.miquido.plugin.openapi.task
+package com.miquido.plugin.contractor.task
 
-import com.miquido.plugin.openapi.Constant
-import com.miquido.plugin.openapi.configuration.OpenApiGeneratorConfiguration
-import com.miquido.plugin.openapi.model.OpenApiSpecification
+import com.miquido.plugin.contractor.Constant
+import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.model.OpenApiSpecification
 import org.gradle.api.plugins.JavaPlugin
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 fun generateInterfaceTask(
-    configuration: OpenApiGeneratorConfiguration,
+    configuration: ContractorConfiguration,
     s: OpenApiSpecification
 ): GenerateTask.() -> Unit = {
     Constant.run {

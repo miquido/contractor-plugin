@@ -1,6 +1,6 @@
-package com.miquido.plugin.openapi.task
+package com.miquido.plugin.contractor.task
 
-import com.miquido.plugin.openapi.Constant
+import com.miquido.plugin.contractor.Constant
 import org.gradle.api.tasks.Delete
 
 fun deleteTempFilesTask(): Delete.() -> Unit = {

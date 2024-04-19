@@ -1,4 +1,4 @@
-package com.miquido.plugin.openapi.model
+package com.miquido.plugin.contractor.model
 
 class RemoteOpenApiSpecification(
     fileName: String,

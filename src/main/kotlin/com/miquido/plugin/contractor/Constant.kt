@@ -1,4 +1,4 @@
-package com.miquido.plugin.openapi
+package com.miquido.plugin.contractor
 
 
 object Constant {
