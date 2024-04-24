@@ -21,7 +21,10 @@ import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Download
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
-
+/**
+ * Contractor Plugin is a plugin that generates API interfaces with *openapi-generator-gradle-plugin*
+ * with prepared format, and also it download or copy necessary OpenAPI definition.
+ */
 open class ContractorPlugin : Plugin<Project> {
 
     private val deleteTempFilesTaskName = "deleteTempFilesTask"
