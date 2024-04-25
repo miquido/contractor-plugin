@@ -48,8 +48,8 @@ gradlePlugin {
     plugins {
         website = "https://github.com/miquido/contractor-plugin"
         vcsUrl = "https://github.com/miquido/contractor-plugin.git"
-        create("contractorPlugin") {
-            id = "contractor-plugin"
+        create("contractor") {
+            id = "$group.contractor-plugin"
             displayName = "Plugin for OpenAPI specification in repositories"
             description = "Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects"
             implementationClass = "com.miquido.plugin.contractor.ContractorPlugin"
@@ -58,35 +58,43 @@ gradlePlugin {
 }
 
 publishing {
-    publications {
-        create<MavenPublication>("pluginMaven") {
-            pom {
-                artifactId = project.name
+    afterEvaluate {
+        publications {
+            withType<MavenPublication> {
+                group = project.group
+                pom {
+                    description.set("Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects")
+                    url.set("https://github.com/miquido/contractor-plugin")
 
-                name.set("Plugin for OpenAPI specification in repositories")
-                description.set("Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects")
-                url.set("https://github.com/miquido/contractor-plugin")
+                    licenses {
+                        license {
+                            name.set("The Apache Software License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                            distribution.set("repo")
+                        }
+                    }
 
-                licenses {
-                    license {
-                        name.set("The Apache Software License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        distribution.set("repo")
+                    developers {
+                        developer {
+                            id.set("pksiazek-mq")
+                            name.set("Przemysław Książek")
+                            url.set("https://github.com/pksiazek-mq")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git@github.com:miquido/contractor-plugin.git")
+                        url.set("https://github.com/miquido/contractor-plugin/tree/master")
                     }
                 }
+            }
 
-                developers {
-                    developer {
-                        id.set("pksiazek-mq")
-                        name.set("Przemysław Książek")
-                        url.set("https://github.com/pksiazek-mq")
-                    }
-                }
+            named<MavenPublication>("pluginMaven") {
+                pom.name.set("Plugin for OpenAPI specification in repositories")
 
-                scm {
-                    connection.set("scm:git:git@github.com:miquido/contractor-plugin.git")
-                    url.set("https://github.com/miquido/contractor-plugin/tree/master")
-                }
+            }
+            named<MavenPublication>("contractorPluginMarkerMaven") {
+                pom.name.set("Plugin for OpenAPI specification in repositories (Gradle plugin marker)")
             }
         }
     }
