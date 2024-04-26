@@ -28,7 +28,7 @@ repositories {
 }
 
 buildConfig {
-    buildConfigField("APP_NAME", project.name)
+    buildConfigField("APP_NAME", "${project.group}.${project.name}")
 }
 
 dependencies {
