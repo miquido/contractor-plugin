@@ -6,6 +6,8 @@ Download or copy OpenAPI contract to project and generate REST interfaces. The p
 
 Add plugin with clause:
 
+### Kotlin
+
 *build.gradle.kts*
 
 ```
@@ -29,6 +31,31 @@ pluginManagement {
 }
 ```
 
+### Groovy
+
+*build.gradle*
+
+```
+plugins {
+    id 'com.miquido.contractor-plugin' version '1.0.2'
+}
+```
+
+*settings.gradle*
+
+```
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        // below is optional, only when mavenCentral is not updated yet
+        maven {
+            url = "https://s01.oss.sonatype.org/content/repositories/releases"
+        }
+    }
+}
+```
+
 Plugin will automatically generate Kotlin interfaces based on configuration.
 
 ## Configuration
@@ -43,7 +70,17 @@ be `local` or `repository`.
 
 Example:
 
+### Kotlin
+
 ```
+import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.configuration.GitlabConfiguration
+import com.miquido.plugin.contractor.configuration.LocalConfiguration
+import com.miquido.plugin.contractor.model.LocalOpenApiSpecification
+import com.miquido.plugin.contractor.model.RemoteOpenApiSpecification
+
+...
+
 configure<ContractorConfiguration> {
     contracts = listOf(
         RemoteOpenApiSpecification("spec.yaml", "org.example", "bank", "clients", "v1"),
@@ -54,6 +91,27 @@ configure<ContractorConfiguration> {
     openApiConfiguration = mapOf("useTags" to "false") // override default settings
 }
 
+```
+
+### Groovy
+
+```
+import com.miquido.plugin.contractor.model.LocalOpenApiSpecification
+import com.miquido.plugin.contractor.model.RemoteOpenApiSpecification
+import com.miquido.plugin.contractor.configuration.LocalConfiguration
+import com.miquido.plugin.contractor.configuration.GitlabConfiguration
+
+...
+
+contractorPluginConfiguration {
+	repository = new GitlabConfiguration("123123", "gitlabToken")
+	local = new LocalConfiguration("../contracts")
+	contracts = [
+            new RemoteOpenApiSpecification("spec.yaml", "org.example", "bank", "clients", "v1", "https://gitlab.com", "main"),
+            new LocalOpenApiSpecification("spec.yaml", "org.example", "bank", "cards", "v1")
+	]
+	openApiConfiguration = [useTags: 'false']
+}
 ```
 
 Parameter table:
