@@ -6,9 +6,26 @@ Download or copy OpenAPI contract to project and generate REST interfaces. The p
 
 Add plugin with clause:
 
+*build.gradle.kts*
+
 ```
 plugins {
-  id("contractor-plugin") version "X.X.X"
+  id("com.miquido.contractor-plugin") version "1.0.2"
+}
+```
+
+*settings.gradle.kts*
+
+```
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        // below is optional, only when mavenCentral is not updated yet
+        maven {
+            setUrl("https://s01.oss.sonatype.org/content/repositories/releases")
+        }
+    }
 }
 ```
 
