@@ -1,6 +1,6 @@
 # Contractor Plugin
 
-Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects.
+Download, clone or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects.
 
 ## Usage
 
@@ -74,20 +74,43 @@ Example:
 
 ```
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
-import com.miquido.plugin.contractor.configuration.GitlabConfiguration
-import com.miquido.plugin.contractor.configuration.LocalConfiguration
-import com.miquido.plugin.contractor.model.LocalOpenApiSpecification
-import com.miquido.plugin.contractor.model.RemoteOpenApiSpecification
+import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
+import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
+import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
+import com.miquido.plugin.contractor.strategy.FallbackAcquireStrategy
 
 ...
 
 configure<ContractorConfiguration> {
     contracts = listOf(
-        RemoteOpenApiSpecification("spec.yaml", "org.example", "bank", "clients", "v1"),
-        LocalOpenApiSpecification("spec.yaml", "org.example", "bank", "cards", "v1")
+        GitlabAccessTokenAcquireStrategy(
+            listOf("org", "example"),
+            listOf("bank", "clients", "v1"),
+            "spec.yaml",
+            "123456",
+            System.getenv("GITLAB_ACCESS_TOKEN")
+        ),
+        LocalConfigurationAcquireStrategy(
+            listOf("org", "example"),
+            listOf("bank", "clients", "v1"),
+            "spec.yaml",
+            ".../example-project"
+        ),
+        GitCloneAcquireStrategy(
+            listOf("org", "example"),
+            listOf("bank", "clients", "v1"),
+            "spec.yaml",
+            "git@gitlab.com:company/example/example-project.git",
+            "example-project"
+        ),
+        FallbackAcquireStrategy(
+            listOf(
+                GitlabAccessTokenAcquireStrategy(...),
+                LocalConfigurationAcquireStrategy(...),
+                GitCloneAcquireStrategy()
+            )
+        )
     )
-    local = LocalConfiguration(relativePath = "../contracts")
-    repository = GitlabConfiguration(projectId = "123123", accessToken = "gitlabToken")
     openApiConfiguration = mapOf("useTags" to "false") // override default settings
 }
 
@@ -96,19 +119,43 @@ configure<ContractorConfiguration> {
 ### Groovy
 
 ```
-import com.miquido.plugin.contractor.model.LocalOpenApiSpecification
-import com.miquido.plugin.contractor.model.RemoteOpenApiSpecification
-import com.miquido.plugin.contractor.configuration.LocalConfiguration
-import com.miquido.plugin.contractor.configuration.GitlabConfiguration
+import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
+import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
+import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
+import com.miquido.plugin.contractor.strategy.FallbackAcquireStrategy
 
 ...
 
 contractorPluginConfiguration {
-	repository = new GitlabConfiguration("123123", "gitlabToken")
-	local = new LocalConfiguration("../contracts")
 	contracts = [
-            new RemoteOpenApiSpecification("spec.yaml", "org.example", "bank", "clients", "v1", "https://gitlab.com", "main"),
-            new LocalOpenApiSpecification("spec.yaml", "org.example", "bank", "cards", "v1")
+            GitlabAccessTokenAcquireStrategy(
+                ["org", "example"],
+                ["bank", "clients", "v1"],
+                "spec.yaml",
+                "123456",
+                System.getenv("GITLAB_ACCESS_TOKEN")
+            ),
+            LocalConfigurationAcquireStrategy(
+                ["org", "example"],
+                ["bank", "clients", "v1"],
+                "spec.yaml",
+                ".../example-project"
+            ),
+            GitCloneAcquireStrategy(
+                ["org", "example"],
+                ["bank", "clients", "v1"],
+                "spec.yaml",
+                "git@gitlab.com:company/example/example-project.git",
+                "example-project"
+            ),
+            FallbackAcquireStrategy(
+                [
+                    GitlabAccessTokenAcquireStrategy(...),
+                    LocalConfigurationAcquireStrategy(...),
+                    GitCloneAcquireStrategy()
+                ]
+            )
 	]
 	openApiConfiguration = [useTags: 'false']
 }
@@ -116,18 +163,54 @@ contractorPluginConfiguration {
 
 Parameter table:
 
-| Parameter            | Description                                                                                                                                                                                    |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| contracts            | Specified by class `RemoteOpenApiSpecification` or `LocalOpenApiSpecification`. Every definied contract creates specification with interfaces.                                                 |
-| local                | Specifies local path to OpenAPI repository. Must be set due to `LocalOpenApiSpecification` class.                                                                                              |
-| repository           | Specifies remote repository with OpenAPI files. Gitlab is currently supported repository. Must be set due to `RemoteOpenApiSpecification`.                                                     |
-| openApiConfiguration | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/. |
+| Parameter            | Description                                                                                                                                                                                                         |
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| contracts            | Specified by class `GitlabAccessTokenAcquireStrategy`, `LocalConfigurationAcquireStrategy`, `GitCloneAcquireStrategy` or `FallbackAcquireStrategy`. Every definied contract creates specification with interfaces.  |
+| openApiConfiguration | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/.                      |
 
 Class table:
 
-| Class name                 | Description                                                                                                                                                                                            |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| LocalOpenApiSpecification  | Contains settings with following local repository structure: ``project/domain/version/fileName``. `basePackage` is used as a prefix of generated classes package: `basePackage.project.domain.version` |
-| RemoteOpenApiSpecification | Like `LocalOpenApiSpecification`, but contains additional data. `baseUrl` can be set when private gitlab repository is used. `branch` can be set when different branch than `main` is used.            |
-| LocalConfiguration         | `relativePath` - relative path to project                                                                                                                                                              |
-| GitlabConfiguration        | `projectId` - Gitlab project ID, `accessToken` - Gitlab access token.                                                                                                                                  |
+| Class name                         | Description                                                                                                            |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| LocalConfigurationAcquireStrategy  | Used for retrieving API contract from local directory                                                                  |
+| GitlabAccessTokenAcquireStrategy   | Used for retrieving API contract from the gitlab repository by downloading it using an access token                    |
+| GitCloneAcquireStrategy            | Used for retrieving API contract from any git repository by cloning it using local git settings                        |
+| FallbackAcquireStrategy            | Used for retrieving API contract using the first encountered strategy from the given list that is capable of doing so  |
+
+LocalConfigurationAcquireStrategy:
+
+| Attribute                        | Description                                                                                                                                                                |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
+| specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
+| specificationFileName            | API contract file name                                                                                                                                                     |
+| relativePath                     | Path of locally stored API contract file                                                                                                                                   |
+
+GitlabAccessTokenAcquireStrategy:
+
+| Attribute                        | Description                                                                                                                                                                |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
+| specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
+| specificationFileName            | API contract file name                                                                                                                                                     |
+| projectId                        | Gitlab project id                                                                                                                                                          |
+| accessToken                      | Gitlab access token                                                                                                                                                        |
+| baseUrl                          | Gitlab base url (default: https://gitlab.com)                                                                                                                              |
+| branch                           | Branch of the project repository from which the file is to be downloaded                                                                                                   |
+
+
+GitCloneAcquireStrategy:
+
+| Attribute                        | Description                                                                                                                                                                |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
+| specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
+| specificationFileName            | API contract file name                                                                                                                                                     |
+| gitCloneUrl                      | Git url for cloning                                                                                                                                                        |
+| repositoryName                   | Name of project repository                                                                                                                                                 |
+
+FallbackAcquireStrategy:
+
+| Attribute          | Description                                                                                                |
+|--------------------|------------------------------------------------------------------------------------------------------------|
+| fallbackStrategies | A list of strategies that defines the order of checking which of them can be used to obtain a API contract |

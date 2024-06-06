@@ -1,10 +1,8 @@
 package com.miquido.plugin.contractor.configuration
 
-import com.miquido.plugin.contractor.model.OpenApiSpecification
+import com.miquido.plugin.contractor.strategy.ContractSpecificationAcquireStrategy
 
 open class ContractorConfiguration {
-    var contracts: List<OpenApiSpecification> = listOf()
-    var local: LocalConfiguration? = null
-    var repository: RepositoryConfiguration? = null
+    var contracts: List<ContractSpecificationAcquireStrategy> = listOf()
     var openApiConfiguration: Map<String, String> = mapOf()
 }
