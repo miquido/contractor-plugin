@@ -31,10 +31,13 @@ buildConfig {
     buildConfigField("APP_NAME", "${project.group}.${project.name}")
 }
 
+val kotlinGradlePluginVersion = "1.9.23"
+val openapiGeneratorGradlePluginVersion = "7.4.0"
+
 dependencies {
     compileOnly(gradleApi())
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
-    implementation("org.openapitools:openapi-generator-gradle-plugin:7.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinGradlePluginVersion")
+    implementation("org.openapitools:openapi-generator-gradle-plugin:$openapiGeneratorGradlePluginVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -51,7 +54,7 @@ gradlePlugin {
         create("contractor") {
             id = "$group.contractor-plugin"
             displayName = "Plugin for OpenAPI specification in repositories"
-            description = "Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects"
+            description = "Download, clone or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects"
             implementationClass = "com.miquido.plugin.contractor.ContractorPlugin"
         }
     }
@@ -63,7 +66,7 @@ publishing {
             withType<MavenPublication> {
                 group = project.group
                 pom {
-                    description.set("Download or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects")
+                    description.set("Download, clone or copy OpenAPI contract to project and generate REST interfaces. The plugin is preferred for Spring projects")
                     url.set("https://github.com/miquido/contractor-plugin")
 
                     licenses {
@@ -79,6 +82,12 @@ publishing {
                             id.set("pksiazek-mq")
                             name.set("Przemysław Książek")
                             url.set("https://github.com/pksiazek-mq")
+                        }
+
+                        developer {
+                            id.set("MGMQ")
+                            name.set("Maciej Guzikowski")
+                            url.set("https://github.com/MGMQ")
                         }
                     }
 

@@ -3,23 +3,14 @@
  */
 package com.miquido.plugin.contractor
 
+import com.miquido.contractor_plugin.BuildConfig
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
-import com.miquido.plugin.contractor.model.LocalOpenApiSpecification
-import com.miquido.plugin.contractor.model.OpenApiLocalization
-import com.miquido.plugin.contractor.model.OpenApiSpecification
-import com.miquido.plugin.contractor.model.RemoteOpenApiSpecification
-import com.miquido.plugin.contractor.task.copy
-import com.miquido.plugin.contractor.task.copyResourcesTask
-import com.miquido.plugin.contractor.task.deleteTempFilesTask
-import com.miquido.plugin.contractor.task.download
-import com.miquido.plugin.contractor.task.generateInterfaceTask
+import java.io.File
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
-import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Download
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 /**
  * Contractor Plugin is a plugin that generates API interfaces with *openapi-generator-gradle-plugin*
@@ -27,85 +18,69 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
  */
 open class ContractorPlugin : Plugin<Project> {
 
-    private val deleteTempFilesTaskName = "deleteTempFilesTask"
-    private val copyResourcesTaskName = "copyResourcesFromPluginTask"
+    private val cleanupTaskName = "cleanupTask"
+    private val copyGeneratorPluginResourcesTaskName = "copyGeneratorPluginResourcesTask"
 
     private lateinit var configuration: ContractorConfiguration
 
-    /**
-     * Task order:
-     * 1) copyResourcesTaskName
-     * 2) deleteTempFilesTaskName
-     * 3) contractDownloadTask / contractCopyTask
-     * 4) contractGenerateTask
-     * 5) kotlinCompile
-     */
     override fun apply(project: Project) {
         configuration = project.extensions.create("contractorPluginConfiguration", ContractorConfiguration::class.java)
 
         project.afterEvaluate {
-            createConfigurationTasks(project)
-            configuration.contracts.forEach { contract ->
-                createContractFileTask(project, contract)
-                createGenerateInterfacesTask(project, contract)
-                addDependencies(contract, project)
-            }
+            registerTasks(project, configuration)
+            prepareTasksOrder(project, configuration)
         }
     }
 
-    private fun createConfigurationTasks(project: Project) {
-        project.tasks.register(copyResourcesTaskName, Copy::class.java, copyResourcesTask())
-        project.tasks.register(deleteTempFilesTaskName, Delete::class.java, deleteTempFilesTask())
+    private fun registerTasks(project: Project, configuration: ContractorConfiguration) {
+        project.tasks.register(copyGeneratorPluginResourcesTaskName, Copy::class.java, copyGeneratorPluginResourcesTask())
+        configuration.contracts.forEach { contract ->
+            contract.registerTasks(project, configuration)
+        }
+        project.tasks.register(cleanupTaskName, Delete::class.java, cleanup())
+    }
 
-        project.tasks.named(deleteTempFilesTaskName) {
-            it.dependsOn(copyResourcesTaskName)
+    private fun prepareTasksOrder(project: Project, configuration: ContractorConfiguration){
+        configuration.contracts.forEach { contract ->
+            contract.prepareTasksOrder(project, copyGeneratorPluginResourcesTaskName)
+        }
+        project.tasks.named(cleanupTaskName) { deleteTempTask ->
+            deleteTempTask.dependsOn(copyGeneratorPluginResourcesTaskName)
+            val contractTasksNames = configuration.contracts.flatMap { it.getTasksNames(project) }
+            deleteTempTask.dependsOn(contractTasksNames)
         }
         project.tasks.withType(KotlinCompile::class.java) {
-            it.dependsOn(deleteTempFilesTaskName)
+            it.dependsOn(cleanupTaskName)
         }
     }
 
-    private fun createContractFileTask(project: Project, contract: OpenApiSpecification) {
-        if (contract.localization == OpenApiLocalization.REMOTE) {
-            project.tasks.register(
-                contract.downloadTaskName,
-                Download::class.java,
-                download(configuration.repository, contract as RemoteOpenApiSpecification)
-            )
-            project.tasks.named(contract.downloadTaskName) {
-                it.dependsOn(project.tasks.named(copyResourcesTaskName))
+    private fun copyGeneratorPluginResourcesTask(): Copy.() -> Unit = {
+        Constant.run {
+            val tempDirectory = File(project.layout.projectDirectory.dir(tempDirectoryName).asFile.absolutePath).apply {
+                mkdirs()
             }
-        } else if (contract.localization == OpenApiLocalization.LOCAL) {
-            project.tasks.register(
-                contract.copyTaskName,
-                Copy::class.java,
-                copy(configuration.local, contract as LocalOpenApiSpecification)
-            )
-            project.tasks.named(contract.copyTaskName) {
-                it.dependsOn(project.tasks.named(copyResourcesTaskName))
-            }
+
+            // TODO: copy all resources
+            project.plugins.getPlugin(BuildConfig.APP_NAME)
+                .javaClass
+                .classLoader
+                .getResourceAsStream("configuration/apiInterface.mustache")
+                .let { resource ->
+                    File(tempDirectory.absolutePath + File.separator + "apiInterface.mustache").let {
+                        resource?.copyTo(it.outputStream())
+                    }
+                }
+
+            from(project.layout.projectDirectory.dir("./$tempDirectoryName"))
+            into(project.layout.projectDirectory.dir("./$configurationDir"))
         }
     }
 
-    private fun createGenerateInterfacesTask(project: Project, contract: OpenApiSpecification) =
-        project.tasks.register(
-            contract.generateTaskName,
-            GenerateTask::class.java,
-            generateInterfaceTask(configuration, contract)
-        )
-
-    private fun addDependencies(contract: OpenApiSpecification, project: Project) {
-        if (contract.localization == OpenApiLocalization.REMOTE) {
-            project.tasks.named(contract.generateTaskName) {
-                it.dependsOn(contract.downloadTaskName)
-            }
-        } else if (contract.localization == OpenApiLocalization.LOCAL) {
-            project.tasks.named(contract.generateTaskName) {
-                it.dependsOn(contract.copyTaskName)
-            }
-        }
-        project.tasks.withType(KotlinCompile::class.java) {
-            it.dependsOn(contract.generateTaskName)
+    fun cleanup(): Delete.() -> Unit = {
+        Constant.run {
+            delete(project.layout.projectDirectory.dir(tempDirectoryName))
+            delete(project.layout.projectDirectory.dir(specificationDir))
+            delete(project.layout.projectDirectory.dir(configurationDir))
         }
     }
 }
