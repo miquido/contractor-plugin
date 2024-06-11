@@ -12,7 +12,7 @@ Add plugin with clause:
 
 ```
 plugins {
-  id("com.miquido.contractor-plugin") version "1.0.2"
+  id("com.miquido.contractor-plugin") version "1.1.0"
 }
 ```
 
@@ -37,7 +37,7 @@ pluginManagement {
 
 ```
 plugins {
-    id 'com.miquido.contractor-plugin' version '1.0.2'
+    id 'com.miquido.contractor-plugin' version '1.1.0'
 }
 ```
 
