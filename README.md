@@ -129,31 +129,31 @@ import com.miquido.plugin.contractor.strategy.FallbackAcquireStrategy
 
 contractorPluginConfiguration {
 	contracts = [
-            GitlabAccessTokenAcquireStrategy(
+            new GitlabAccessTokenAcquireStrategy(
                 ["org", "example"],
                 ["bank", "clients", "v1"],
                 "spec.yaml",
                 "123456",
                 System.getenv("GITLAB_ACCESS_TOKEN")
             ),
-            LocalConfigurationAcquireStrategy(
+            new LocalConfigurationAcquireStrategy(
                 ["org", "example"],
                 ["bank", "clients", "v1"],
                 "spec.yaml",
                 ".../example-project"
             ),
-            GitCloneAcquireStrategy(
+            new GitCloneAcquireStrategy(
                 ["org", "example"],
                 ["bank", "clients", "v1"],
                 "spec.yaml",
                 "git@gitlab.com:company/example/example-project.git",
                 "example-project"
             ),
-            FallbackAcquireStrategy(
+            new FallbackAcquireStrategy(
                 [
-                    GitlabAccessTokenAcquireStrategy(...),
-                    LocalConfigurationAcquireStrategy(...),
-                    GitCloneAcquireStrategy()
+                    new GitlabAccessTokenAcquireStrategy(...),
+                    new LocalConfigurationAcquireStrategy(...),
+                    new GitCloneAcquireStrategy()
                 ]
             )
 	]
