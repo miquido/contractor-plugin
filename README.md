@@ -111,7 +111,7 @@ configure<ContractorConfiguration> {
             )
         )
     )
-    openApiConfiguration = mapOf("useTags" to "false") // override default settings
+    configOptions = mapOf("useTags" to "false") // override default settings
 }
 
 ```
@@ -157,16 +157,19 @@ contractorPluginConfiguration {
                 ]
             )
 	]
-	openApiConfiguration = [useTags: 'false']
+	configOptions = [useTags: 'false']
 }
 ```
 
 Parameter table:
 
-| Parameter            | Description                                                                                                                                                                                                         |
-|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| contracts            | Specified by class `GitlabAccessTokenAcquireStrategy`, `LocalConfigurationAcquireStrategy`, `GitCloneAcquireStrategy` or `FallbackAcquireStrategy`. Every definied contract creates specification with interfaces.  |
-| openApiConfiguration | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/.                      |
+| Parameter      | Description                                                                                                                                                                                                        |
+|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| contracts      | Specified by class `GitlabAccessTokenAcquireStrategy`, `LocalConfigurationAcquireStrategy`, `GitCloneAcquireStrategy` or `FallbackAcquireStrategy`. Every definied contract creates specification with interfaces. |
+| generatorName  | Generator name for OpenAPI plugin configuration. Available generators: https://openapi-generator.tech/docs/generators/#server-generators                                                                           |
+| configOptions  | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/.                     |
+| importMappings | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                     |
+| typeMappings   | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                     |
 
 Class table:
 
