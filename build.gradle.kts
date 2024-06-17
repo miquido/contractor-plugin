@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "com.miquido"
-version = "1.1.0"
+version = "1.1.1"
 
 java {
     withJavadocJar()
@@ -24,6 +24,7 @@ java {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -32,7 +33,7 @@ buildConfig {
 }
 
 val kotlinGradlePluginVersion = "1.9.23"
-val openapiGeneratorGradlePluginVersion = "7.4.0"
+val openapiGeneratorGradlePluginVersion = "7.6.0"
 
 dependencies {
     compileOnly(gradleApi())

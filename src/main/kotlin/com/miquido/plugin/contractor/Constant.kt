@@ -10,7 +10,7 @@ object Constant {
 
     // https://openapi-generator.tech/docs/generators/kotlin/
     // https://openapi-generator.tech/docs/generators/kotlin-spring/
-    val openApiProperties: Map<String, String> = mapOf(
+    val defaultConfigOptions: Map<String, String> = mapOf(
         "interfaceOnly" to "true", // Whether to generate only API interface stubs without the server files.
         "useSpringBoot3" to "true", // Generate code and provide dependencies for use with Spring Boot 3.x. (Use jakarta instead of javax in import)
         "serializationLibrary" to "kotlinx_serialization",

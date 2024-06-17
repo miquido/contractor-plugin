@@ -4,6 +4,7 @@ import com.miquido.plugin.contractor.Constant
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
@@ -51,7 +52,7 @@ abstract class ContractSpecificationAcquireStrategy(
     ): GenerateTask.() -> Unit = {
         Constant.run {
             group = JavaPlugin.CLASSES_TASK_NAME
-            generatorName.set("kotlin-spring")
+            generatorName.set(configuration.generatorName)
             inputSpec.set("${project.projectDir}/$specificationDir/$specificationSourceDirectoryPath/${specificationFileName}")
             outputDir.set(
                 project.layout.projectDirectory
@@ -61,13 +62,25 @@ abstract class ContractSpecificationAcquireStrategy(
             apiPackage.set("${generatedApiDirectoryPackages}.api")
             modelPackage.set("${generatedApiDirectoryPackages}.dto")
             configOptions.set(
-                openApiProperties + configuration.openApiConfiguration + mapOf("basePackage" to generatedApiDirectoryPackages)
+                defaultConfigOptions + configuration.configOptions + mapOf("basePackage" to generatedApiDirectoryPackages)
+            )
+            importMappings.set(
+                configuration.importMappings
+            )
+            typeMappings.set(
+                configuration.typeMappings
+
             )
             project.extensions
                 .getByType(KotlinJvmProjectExtension::class.java)
                 .sourceSets.getByName("main")
                 .kotlin.srcDir(
                     project.layout.projectDirectory.dir("$interfaceDir/$specificationSourceDirectoryPath/src/main/kotlin")
+                )
+            project.extensions.getByType(JavaPluginExtension::class.java)
+                .sourceSets.getByName("main")
+                .java.srcDir(
+                    project.layout.projectDirectory.dir("$interfaceDir/$specificationSourceDirectoryPath/src/main/java")
                 )
             templateDir.set("${project.projectDir}/$configurationDir")
         }
