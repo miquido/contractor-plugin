@@ -12,7 +12,7 @@ Add plugin with clause:
 
 ```
 plugins {
-  id("com.miquido.contractor-plugin") version "1.1.0"
+  id("com.miquido.contractor-plugin") version "1.1.2"
 }
 ```
 
@@ -37,7 +37,7 @@ pluginManagement {
 
 ```
 plugins {
-    id 'com.miquido.contractor-plugin' version '1.1.0'
+    id 'com.miquido.contractor-plugin' version '1.1.2'
 }
 ```
 
@@ -73,7 +73,7 @@ Example:
 ### Kotlin
 
 ```
-import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
 import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
@@ -84,34 +84,75 @@ import com.miquido.plugin.contractor.strategy.FallbackAcquireStrategy
 configure<ContractorConfiguration> {
     contracts = listOf(
         GitlabAccessTokenAcquireStrategy(
-            listOf("org", "example"),
-            listOf("bank", "clients", "v1"),
-            "spec.yaml",
-            "123456",
-            System.getenv("GITLAB_ACCESS_TOKEN")
+            BaseStrategyConfiguration(
+                listOf("org", "example"),
+                listOf("bank", "clients", "v1"),
+                "spec.yaml",
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
+            )
+            GitlabAccessTokenAcquireStrategy.Configuration(
+                "123456",
+                System.getenv("GITLAB_ACCESS_TOKEN")
+               "https://gitlab.com",
+               "main"
+            )
         ),
         LocalConfigurationAcquireStrategy(
-            listOf("org", "example"),
-            listOf("bank", "clients", "v1"),
-            "spec.yaml",
-            ".../example-project"
+            BaseStrategyConfiguration(
+                listOf("org", "example"),
+                listOf("bank", "clients", "v1"),
+                "spec.yaml",
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
+            )
+            LocalConfigurationAcquireStrategy.Configuration(
+                ".../example-project"
+            )
         ),
         GitCloneAcquireStrategy(
-            listOf("org", "example"),
-            listOf("bank", "clients", "v1"),
-            "spec.yaml",
-            "git@gitlab.com:company/example/example-project.git",
-            "example-project"
+            BaseStrategyConfiguration(
+                listOf("org", "example"),
+                listOf("bank", "clients", "v1"),
+                "spec.yaml",
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
+            )
+            GitCloneAcquireStrategy.Configuration(
+                "git@gitlab.com:company/example/example-project.git",
+                "example-project",
+                "main"
+            )
         ),
         FallbackAcquireStrategy(
-            listOf(
-                GitlabAccessTokenAcquireStrategy(...),
-                LocalConfigurationAcquireStrategy(...),
-                GitCloneAcquireStrategy()
+            BaseStrategyConfiguration(
+                listOf("org", "example"),
+                listOf("bank", "clients", "v1"),
+                "spec.yaml",
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
+            )
+            FallbackAcquireStrategy.Configuration(
+                listOf(
+                    GitlabAccessTokenAcquireStrategy.Configuration(...),
+                    LocalConfigurationAcquireStrategy.Configuration(...),
+                    GitCloneAcquireStrategy.Configuration(...)
+                )
             )
         )
     )
-    configOptions = mapOf("useTags" to "false") // override default settings
+    generatorName = "spring"
+    importMappings = listOf(
+        "StreamingResponseBody": "org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody",
+        "BigInteger": "java.math.BigInteger"
+    )
+    typeMappings = listOf(
+        "array+binary": "StreamingResponseBody",
+        "string+bigint": "BigInteger"
+    )
+    configOptions = mapOf(
+        'useTags' to 'true',
+        'openApiNullable' to 'false',
+        'generateConstructorWithAllArgs' to 'false',
+        'generatedConstructorWithRequiredArgs' to 'false',
+        'bigDecimalAsString' to 'true'
+    ) // override default settings
 }
 
 ```
@@ -119,7 +160,7 @@ configure<ContractorConfiguration> {
 ### Groovy
 
 ```
-import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
 import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
@@ -130,46 +171,91 @@ import com.miquido.plugin.contractor.strategy.FallbackAcquireStrategy
 contractorPluginConfiguration {
 	contracts = [
             new GitlabAccessTokenAcquireStrategy(
-                ["org", "example"],
-                ["bank", "clients", "v1"],
-                "spec.yaml",
-                "123456",
-                System.getenv("GITLAB_ACCESS_TOKEN")
+                new BaseStrategyConfiguration(
+                    ["org", "example"],
+                    ["bank", "clients", "v1"],
+                    "spec.yaml",
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                ),
+                new GitlabAccessTokenAcquireStrategy.Configuration(
+                    "123456",
+                    System.getenv("GITLAB_ACCESS_TOKEN")
+                    "https://gitlab.com",
+                    "main"
+                ),
             ),
             new LocalConfigurationAcquireStrategy(
-                ["org", "example"],
-                ["bank", "clients", "v1"],
-                "spec.yaml",
-                ".../example-project"
+                new BaseStrategyConfiguration(
+                    ["org", "example"],
+                    ["bank", "clients", "v1"],
+                    "spec.yaml",
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                ),
+                new LocalConfigurationAcquireStrategy.Configuration(
+                    ".../example-project"
+                )
             ),
             new GitCloneAcquireStrategy(
-                ["org", "example"],
-                ["bank", "clients", "v1"],
-                "spec.yaml",
-                "git@gitlab.com:company/example/example-project.git",
-                "example-project"
+                new BaseStrategyConfiguration(
+                    ["org", "example"],
+                    ["bank", "clients", "v1"],
+                    "spec.yaml",
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                ),
+                new GitCloneAcquireStrategy.Configuration(
+                    "git@gitlab.com:company/example/example-project.git",
+                    "example-project"
+                    "main"
+                )
             ),
             new FallbackAcquireStrategy(
-                [
-                    new GitlabAccessTokenAcquireStrategy(...),
-                    new LocalConfigurationAcquireStrategy(...),
-                    new GitCloneAcquireStrategy()
-                ]
+                new BaseStrategyConfiguration(
+                    ["org", "example"],
+                    ["bank", "clients", "v1"],
+                    "spec.yaml",
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                )
+                new FallbackAcquireStrategy.Configuration(
+                    [
+                        new GitlabAccessTokenAcquireStrategy.Configuration(...),
+                        new LocalConfigurationAcquireStrategy.Configuration(...),
+                        new GitCloneAcquireStrategy.Configuration(...)
+                    ]
+                )
             )
 	]
-	configOptions = [useTags: 'false']
+	generatorName = "spring"
+    skipValidateSpec = true
+    importMappings = [
+        "StreamingResponseBody": "org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody",
+        "BigInteger": "java.math.BigInteger"
+    ]
+    typeMappings = [
+        "array+binary": "StreamingResponseBody",
+        "string+bigint": "BigInteger"
+    ]
+    configOptions = [
+        useTags: 'true',
+        openApiNullable: 'false',
+        generateConstructorWithAllArgs: 'false',
+        generatedConstructorWithRequiredArgs: 'false',
+        bigDecimalAsString: 'true'
+    ]
 }
 ```
 
+
 Parameter table:
 
-| Parameter      | Description                                                                                                                                                                                                        |
-|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| contracts      | Specified by class `GitlabAccessTokenAcquireStrategy`, `LocalConfigurationAcquireStrategy`, `GitCloneAcquireStrategy` or `FallbackAcquireStrategy`. Every definied contract creates specification with interfaces. |
-| generatorName  | Generator name for OpenAPI plugin configuration. Available generators: https://openapi-generator.tech/docs/generators/#server-generators                                                                           |
-| configOptions  | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/.                     |
-| importMappings | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                     |
-| typeMappings   | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                     |
+| Parameter        | Description                                                                                                                                                                                                                                                   |
+|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| contracts        | Specified by class `GitlabAccessTokenAcquireStrategy`, `LocalConfigurationAcquireStrategy`, `GitCloneAcquireStrategy` or `FallbackAcquireStrategy`. Every definied contract creates specification with interfaces.                                            |
+| skipValidateSpec | Whether or not to skip validating the input spec prior to generation. By default, invalid specifications will result in an error. For more see https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md |
+| generatorName    | Generator name for OpenAPI plugin configuration. Available generators: https://openapi-generator.tech/docs/generators/#server-generators                                                                                                                      |
+| importMappings   | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                                                                |
+| typeMappings     | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                                                                |
+| configOptions    | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/.                                                                |
+
 
 Class table:
 
@@ -180,40 +266,49 @@ Class table:
 | GitCloneAcquireStrategy            | Used for retrieving API contract from any git repository by cloning it using local git settings                        |
 | FallbackAcquireStrategy            | Used for retrieving API contract using the first encountered strategy from the given list that is capable of doing so  |
 
-LocalConfigurationAcquireStrategy:
+
+BaseStrategyConfiguration:
 
 | Attribute                        | Description                                                                                                                                                                |
 |----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
 | specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
-| specificationFileName            | API contract file name                                                                                                                                                     |
-| relativePath                     | Path of locally stored API contract file                                                                                                                                   |
-
-GitlabAccessTokenAcquireStrategy:
-
-| Attribute                        | Description                                                                                                                                                                |
-|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
-| specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
-| specificationFileName            | API contract file name                                                                                                                                                     |
-| projectId                        | Gitlab project id                                                                                                                                                          |
-| accessToken                      | Gitlab access token                                                                                                                                                        |
-| baseUrl                          | Gitlab base url (default: https://gitlab.com)                                                                                                                              |
-| branch                           | Branch of the project repository from which the file is to be downloaded                                                                                                   |
+| mainSpecificationFileName        | Main API contract file name                                                                                                                                                |
+| additionalSpecificationFileNames | List of additional API contract files names. It should be ordered relative to the references(`$ref`) inside these files                                                    |
 
 
-GitCloneAcquireStrategy:
+LocalConfigurationAcquireStrategy.Configuration:
 
-| Attribute                        | Description                                                                                                                                                                |
-|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
-| specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
-| specificationFileName            | API contract file name                                                                                                                                                     |
-| gitCloneUrl                      | Git url for cloning                                                                                                                                                        |
-| repositoryName                   | Name of project repository                                                                                                                                                 |
+| Attribute                  | Description                                      |
+|----------------------------|--------------------------------------------------|
+| baseConfiguration          | Base configuration (`BaseStrategyConfiguration`) |
+| configuration.relativePath | Path of locally stored API contract file         |
 
-FallbackAcquireStrategy:
 
-| Attribute          | Description                                                                                                |
-|--------------------|------------------------------------------------------------------------------------------------------------|
-| fallbackStrategies | A list of strategies that defines the order of checking which of them can be used to obtain a API contract |
+GitlabAccessTokenAcquireStrategy.Configuration:
+
+| Attribute                 | Description                                                              |
+|---------------------------|--------------------------------------------------------------------------|
+| baseConfiguration         | Base configuration (`BaseStrategyConfiguration`)                         |
+| configuration.projectId   | Gitlab project id                                                        |
+| configuration.accessToken | Gitlab access token                                                      |
+| configuration.baseUrl     | Gitlab base url (default: https://gitlab.com)                            |
+| configuration.branch      | Branch of the project repository from which the file is to be downloaded |
+
+
+GitCloneAcquireStrategy.Configuration:
+
+| Attribute                    | Description                                                          |
+|------------------------------|----------------------------------------------------------------------|
+| baseConfiguration            | Base configuration (`BaseStrategyConfiguration`)                     |
+| configuration.gitCloneUrl    | Git url for cloning                                                  |
+| configuration.repositoryName | Name of project repository                                           |
+| configuration.branchName     | Branch of the project repository from which the file is to be cloned |
+
+
+FallbackAcquireStrategy.Configuration:
+
+| Attribute                            | Description                                                                                                               |
+|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| baseConfiguration                    | Base configuration (`BaseStrategyConfiguration`)                                                                          |
+| configuration.strategyConfigurations | A list of strategies configurations that defines the order of checking which of them can be used to obtain a API contract |

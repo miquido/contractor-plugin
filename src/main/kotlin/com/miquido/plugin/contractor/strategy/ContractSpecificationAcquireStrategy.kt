@@ -2,6 +2,8 @@ package com.miquido.plugin.contractor.strategy
 
 import com.miquido.plugin.contractor.Constant
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
+import com.miquido.plugin.contractor.util.DependsOnSingleTaskAction
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
@@ -10,18 +12,24 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 abstract class ContractSpecificationAcquireStrategy(
-    generatedApiBaseDirectoryList: List<String>,
-    specificationSourceDirectoryList: List<String>,
-    val specificationFileName: String,
+    private val baseConfiguration: BaseStrategyConfiguration
 ) {
 
-    protected val taskName = specificationSourceDirectoryList.joinToString("") { it.capitalized() }
+    protected val taskName = baseConfiguration.specificationSourceDirectoryList
+        .joinToString(
+            separator = "",
+            postfix = baseConfiguration.mainSpecificationFileName.sanitizeFileName().capitalized()
+        ) {
+            it.capitalized()
+        }
     private val generateTaskName = "${taskName}GenerateTask"
-    protected val specificationSourceDirectoryPath = specificationSourceDirectoryList.joinToString("/")
-    protected val specificationSourceDirectoryPackages = specificationSourceDirectoryList.joinToString(".")
-    protected val generatedApiBaseDirectoryPath = generatedApiBaseDirectoryList.joinToString("/")
-    protected val generatedApiBaseDirectoryPackages = generatedApiBaseDirectoryList.joinToString(".")
+    protected val specificationSourceDirectoryPath = baseConfiguration.specificationSourceDirectoryList.joinToString("/")
+    protected val specificationSourceDirectoryPackages = baseConfiguration.specificationSourceDirectoryList.joinToString(".")
+    protected val generatedApiBaseDirectoryPath = baseConfiguration.generatedApiBaseDirectoryList.joinToString("/")
+    protected val generatedApiBaseDirectoryPackages = baseConfiguration.generatedApiBaseDirectoryList.joinToString(".")
     protected val generatedApiDirectoryPackages = "${generatedApiBaseDirectoryPackages}.${specificationSourceDirectoryPackages}"
+
+    protected val allSpecificationFileNames = baseConfiguration.additionalSpecificationFileNames + baseConfiguration.mainSpecificationFileName
 
     protected abstract val specificationAcquireTasksOrder: List<String>
     abstract fun canBeUsed(project: Project): Boolean
@@ -40,12 +48,19 @@ abstract class ContractSpecificationAcquireStrategy(
     open fun prepareTasksOrder(project: Project, dependsOn: String) {
         prepareSpecificationAcquireTasksOrder(project, dependsOn)
         val lastContractTaskName = specificationAcquireTasksOrder.last()
-        project.tasks.named(generateTaskName) {
-            it.dependsOn(lastContractTaskName)
-        }
+        project.tasks.named(
+            generateTaskName,
+            DependsOnSingleTaskAction(project, lastContractTaskName)
+        )
     }
 
     open fun getTasksNames(project: Project) = specificationAcquireTasksOrder + generateTaskName
+
+    private fun String.sanitizeFileName() = this.substringBefore(".")
+
+    protected fun createFilesNamesToTaskNamesMap(taskNameSuffix: String) = allSpecificationFileNames.associateWith{ fileName ->
+        "${taskName}${fileName.sanitizeFileName().capitalized()}${taskNameSuffix}"
+    }
 
     private fun generateInterfaceTask(
         configuration: ContractorConfiguration
@@ -53,7 +68,7 @@ abstract class ContractSpecificationAcquireStrategy(
         Constant.run {
             group = JavaPlugin.CLASSES_TASK_NAME
             generatorName.set(configuration.generatorName)
-            inputSpec.set("${project.projectDir}/$specificationDir/$specificationSourceDirectoryPath/${specificationFileName}")
+            inputSpec.set("${project.projectDir}/$specificationDir/$specificationSourceDirectoryPath/${baseConfiguration.mainSpecificationFileName}")
             outputDir.set(
                 project.layout.projectDirectory
                     .dir("$interfaceDir/$specificationSourceDirectoryPath")
@@ -64,6 +79,7 @@ abstract class ContractSpecificationAcquireStrategy(
             configOptions.set(
                 defaultConfigOptions + configuration.configOptions + mapOf("basePackage" to generatedApiDirectoryPackages)
             )
+            skipValidateSpec.set(configuration.skipValidateSpec)
             importMappings.set(
                 configuration.importMappings
             )
@@ -84,5 +100,9 @@ abstract class ContractSpecificationAcquireStrategy(
                 )
             templateDir.set("${project.projectDir}/$configurationDir")
         }
+    }
+
+    interface Configuration<T: ContractSpecificationAcquireStrategy> {
+        fun createStrategy(baseConfiguration: BaseStrategyConfiguration): T
     }
 }

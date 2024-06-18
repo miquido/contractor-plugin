@@ -5,6 +5,7 @@ package com.miquido.plugin.contractor
 
 import com.miquido.contractor_plugin.BuildConfig
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.util.DependsOnMultipleTasksAction
 import java.io.File
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -41,14 +42,22 @@ open class ContractorPlugin : Plugin<Project> {
     }
 
     private fun prepareTasksOrder(project: Project, configuration: ContractorConfiguration){
+        var dependentTaskName = copyGeneratorPluginResourcesTaskName
         configuration.contracts.forEach { contract ->
-            contract.prepareTasksOrder(project, copyGeneratorPluginResourcesTaskName)
+            contract.prepareTasksOrder(project, dependentTaskName)
+            dependentTaskName = contract.getTasksNames(project).last()
         }
-        project.tasks.named(cleanupTaskName) { deleteTempTask ->
-            deleteTempTask.dependsOn(copyGeneratorPluginResourcesTaskName)
-            val contractTasksNames = configuration.contracts.flatMap { it.getTasksNames(project) }
-            deleteTempTask.dependsOn(contractTasksNames)
-        }
+
+        project.tasks.named(
+            cleanupTaskName,
+            DependsOnMultipleTasksAction(
+                project,
+                buildList {
+                    add(copyGeneratorPluginResourcesTaskName)
+                    addAll(configuration.contracts.flatMap { it.getTasksNames(project) })
+                }
+            )
+        )
         project.tasks.withType(KotlinCompile::class.java) {
             it.dependsOn(cleanupTaskName)
         }

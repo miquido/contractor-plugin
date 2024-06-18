@@ -1,11 +1,17 @@
 package com.miquido.plugin.contractor.strategy
 
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
 import org.gradle.api.Project
 
 class FallbackAcquireStrategy(
-    private val fallbackStrategies: List<ContractSpecificationAcquireStrategy>
-) : ContractSpecificationAcquireStrategy(emptyList(), emptyList(), "") {
+    baseConfiguration: BaseStrategyConfiguration,
+    configuration: Configuration
+) : ContractSpecificationAcquireStrategy(baseConfiguration) {
+
+    private val fallbackStrategies: List<ContractSpecificationAcquireStrategy> = configuration.strategyConfigurations.map{
+        it.createStrategy(baseConfiguration)
+    }
 
     override fun canBeUsed(project: Project): Boolean {
         return fallbackStrategies.map { it.canBeUsed(project) }.any { it }
@@ -30,5 +36,12 @@ class FallbackAcquireStrategy(
 
     override fun prepareSpecificationAcquireTasksOrder(project: Project, dependsOn: String) {
         // There is no need for implementation
+    }
+
+    data class Configuration (
+        val strategyConfigurations: List<ContractSpecificationAcquireStrategy.Configuration<*>>
+    ): ContractSpecificationAcquireStrategy.Configuration<FallbackAcquireStrategy> {
+        override fun createStrategy(baseConfiguration: BaseStrategyConfiguration): FallbackAcquireStrategy =
+            FallbackAcquireStrategy(baseConfiguration, this)
     }
 }
