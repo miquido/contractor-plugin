@@ -2,6 +2,8 @@ package com.miquido.plugin.contractor.strategy
 
 import com.miquido.plugin.contractor.Constant
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.SingleFile
+import com.miquido.plugin.contractor.strategy.configuration.toDirectoryPath
 import com.miquido.plugin.contractor.util.DependsOnSingleTaskAction
 import java.net.URLEncoder
 import org.gradle.api.Project
@@ -12,7 +14,7 @@ class GitlabAccessTokenAcquireStrategy(
     private val configuration: Configuration
 ) : ContractSpecificationAcquireStrategy(baseConfiguration) {
 
-    private val downloadFromGitlabTaskNames = createFilesNamesToTaskNamesMap("DownloadFromGitlabTask")
+    private val downloadFromGitlabTaskNames = createFilesToTaskNamesMap("DownloadFromGitlabTask")
 
     override val specificationAcquireTasksOrder = buildList {
         this.addAll(downloadFromGitlabTaskNames.values)
@@ -43,25 +45,25 @@ class GitlabAccessTokenAcquireStrategy(
         }
     }
 
-    private fun download(fileName: String): Download.() -> Unit =
+    private fun download(file: SingleFile): Download.() -> Unit =
         {
             Constant.run {
                 header("PRIVATE-TOKEN", configuration.accessToken)
-                src(getGitlabUrl(fileName))
+                src(getGitlabUrl(file))
                 dest(
                     project.layout.projectDirectory
-                        .dir("$specificationDir/${specificationSourceDirectoryPath}")
-                        .file(fileName)
+                        .dir("$specificationDir/${file.directoryList.toDirectoryPath()}")
+                        .file(file.fileFullName)
                         .asFile
                 )
             }
         }
 
-    private fun getGitlabUrl(fileName: String): String {
+    private fun getGitlabUrl(file: SingleFile): String {
         Constant.run {
             val basePath = "${configuration.baseUrl}/api/v4/projects/${configuration.projectId}/repository/files"
             val arguments = URLEncoder.encode(
-                "$specificationSourceDirectoryPath/$fileName", "utf-8"
+                "${file.directoryList.toDirectoryPath()}/${file.fileFullName}", "utf-8"
             ) + "/raw?ref=${configuration.branch}"
             return "$basePath/$arguments"
         }

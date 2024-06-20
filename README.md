@@ -12,7 +12,7 @@ Add plugin with clause:
 
 ```
 plugins {
-  id("com.miquido.contractor-plugin") version "1.1.2"
+  id("com.miquido.contractor-plugin") version "1.1.3"
 }
 ```
 
@@ -37,7 +37,7 @@ pluginManagement {
 
 ```
 plugins {
-    id 'com.miquido.contractor-plugin' version '1.1.2'
+    id 'com.miquido.contractor-plugin' version '1.1.3'
 }
 ```
 
@@ -60,13 +60,7 @@ Plugin will automatically generate Kotlin interfaces based on configuration.
 
 ## Configuration
 
-Plugin needs additional configuration to generate classes. You need to specify local and/or remote localization and
-specify OpenAPI files based on following directory convention:
-
-`rootDir/project/domain/version/fileName`
-
-Where `project`, `domain`, `version` and `fileName` is configurable in lists of contracts, but the `rootDir` could
-be `local` or `repository`.
+Plugin needs additional configuration to generate classes.
 
 Example:
 
@@ -74,6 +68,8 @@ Example:
 
 ```
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.SingleFile
+import com.miquido.plugin.contractor.strategy.configuration.MultipleFiles
 import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
@@ -85,51 +81,95 @@ configure<ContractorConfiguration> {
     contracts = listOf(
         GitlabAccessTokenAcquireStrategy(
             BaseStrategyConfiguration(
-                listOf("org", "example"),
-                listOf("bank", "clients", "v1"),
-                "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+                apiGenerationTargetDirectoryList = listOf("org", "example"),
+                mainSpecificationFilePath = SingleFile(
+                    listOf("bank", "clients", "v1"),
+                    "spec.yaml"
+                ),
+                ladditionalSpecificationFilePaths = istOf(
+                    MultipleFiles(
+                        listOf("bank", "common", "v1"),
+                        listOf("common.yaml")
+                    ),
+                    MultipleFiles(
+                        listOf("bank", "api", "v1"),
+                        listOf("firstSpec.yaml", "secondSpec.yaml")
+                    )
+                )
             ),
             GitlabAccessTokenAcquireStrategy.Configuration(
-                "123456",
-                System.getenv("GITLAB_ACCESS_TOKEN"),
-               "https://gitlab.com",
-               "main"
+               projectId = "123456",
+               accessToken = System.getenv("GITLAB_ACCESS_TOKEN"),
+               baseUrl = "https://gitlab.com",
+               branch = "main"
             )
         ),
         LocalConfigurationAcquireStrategy(
             BaseStrategyConfiguration(
-                listOf("org", "example"),
-                listOf("bank", "clients", "v1"),
-                "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+                apiGenerationTargetDirectoryList = listOf("org", "example"),
+                mainSpecificationFilePath = SingleFile(
+                    listOf("bank", "clients", "v1"),
+                    "spec.yaml"
+                ),
+                additionalSpecificationFilePaths = listOf(
+                    MultipleFiles(
+                        listOf("bank", "common", "v1"),
+                        listOf("common.yaml")
+                    ),
+                    MultipleFiles(
+                        listOf("bank", "api", "v1"),
+                        listOf("firstSpec.yaml", "secondSpec.yaml")
+                    )
+                )
             ),
             LocalConfigurationAcquireStrategy.Configuration(
-                ".../example-project"
+                relativePath = ".../example-project"
             )
         ),
         GitCloneAcquireStrategy(
             BaseStrategyConfiguration(
-                listOf("org", "example"),
-                listOf("bank", "clients", "v1"),
-                "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+                apiGenerationTargetDirectoryList = listOf("org", "example"),
+                mainSpecificationFilePath = SingleFile(
+                    listOf("bank", "clients", "v1"),
+                    "spec.yaml"
+                ),
+                additionalSpecificationFilePaths = listOf(
+                    MultipleFiles(
+                        listOf("bank", "common", "v1"),
+                        listOf("common.yaml")
+                    ),
+                    MultipleFiles(
+                        listOf("bank", "api", "v1"),
+                        listOf("firstSpec.yaml", "secondSpec.yaml")
+                    )
+                )
             ),
             GitCloneAcquireStrategy.Configuration(
-                "git@gitlab.com:company/example/example-project.git",
-                "example-project",
-                "main"
+                gitCloneUrl = "git@gitlab.com:company/example/example-project.git",
+                repositoryName = "example-project",
+                branchName = "main"
             )
         ),
         FallbackAcquireStrategy(
             BaseStrategyConfiguration(
-                listOf("org", "example"),
-                listOf("bank", "clients", "v1"),
-                "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+                apiGenerationTargetDirectoryList = listOf("org", "example"),
+                mainSpecificationFilePath = SingleFile(
+                    listOf("bank", "clients", "v1"),
+                    "spec.yaml"
+                ),
+                additionalSpecificationFilePaths = listOf(
+                    MultipleFiles(
+                        listOf("bank", "common", "v1"),
+                        listOf("common.yaml")
+                    ),
+                    MultipleFiles(
+                        listOf("bank", "api", "v1"),
+                        listOf("firstSpec.yaml", "secondSpec.yaml")
+                    )
+                )
             ),
             FallbackAcquireStrategy.Configuration(
-                listOf(
+                strategyConfigurations = listOf(
                     GitlabAccessTokenAcquireStrategy.Configuration(...),
                     LocalConfigurationAcquireStrategy.Configuration(...),
                     GitCloneAcquireStrategy.Configuration(...)
@@ -152,7 +192,7 @@ configure<ContractorConfiguration> {
         'generateConstructorWithAllArgs' to 'false',
         'generatedConstructorWithRequiredArgs' to 'false',
         'bigDecimalAsString' to 'true'
-    ) // override default settings
+    )
 }
 
 ```
@@ -161,6 +201,8 @@ configure<ContractorConfiguration> {
 
 ```
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.SingleFile
+import com.miquido.plugin.contractor.strategy.configuration.MultipleFiles
 import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
@@ -170,61 +212,105 @@ import com.miquido.plugin.contractor.strategy.FallbackAcquireStrategy
 
 contractorPluginConfiguration {
 	contracts = [
-            new GitlabAccessTokenAcquireStrategy(
-                new BaseStrategyConfiguration(
-                    ["org", "example"],
+        new GitlabAccessTokenAcquireStrategy(
+            new BaseStrategyConfiguration(
+                ["org", "example"], // apiGenerationTargetDirectoryList
+                new SingleFile( // mainSpecificationFilePath
                     ["bank", "clients", "v1"],
-                    "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
+                    "spec.yaml"
                 ),
-                new GitlabAccessTokenAcquireStrategy.Configuration(
-                    "123456",
-                    System.getenv("GITLAB_ACCESS_TOKEN"),
-                    "https://gitlab.com",
-                    "main"
-                )
+                [ // additionalSpecificationFilePaths
+                    new MultipleFiles(
+                        ["bank", "common", "v1"],
+                        ["common.yaml"]
+                    ),
+                    new MultipleFiles(
+                        ["bank", "api", "v1"],
+                        ["firstSpec.yaml", "secondSpec.yaml"]
+                    )
+                ]
             ),
-            new LocalConfigurationAcquireStrategy(
-                new BaseStrategyConfiguration(
-                    ["org", "example"],
-                    ["bank", "clients", "v1"],
-                    "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
-                ),
-                new LocalConfigurationAcquireStrategy.Configuration(
-                    ".../example-project"
-                )
-            ),
-            new GitCloneAcquireStrategy(
-                new BaseStrategyConfiguration(
-                    ["org", "example"],
-                    ["bank", "clients", "v1"],
-                    "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
-                ),
-                new GitCloneAcquireStrategy.Configuration(
-                    "git@gitlab.com:company/example/example-project.git",
-                    "example-project",
-                    "main"
-                )
-            ),
-            new FallbackAcquireStrategy(
-                new BaseStrategyConfiguration(
-                    ["org", "example"],
-                    ["bank", "clients", "v1"],
-                    "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
-                ),
-                new FallbackAcquireStrategy.Configuration(
-                    [
-                        new GitlabAccessTokenAcquireStrategy.Configuration(...),
-                        new LocalConfigurationAcquireStrategy.Configuration(...),
-                        new GitCloneAcquireStrategy.Configuration(...)
-                    ]
-                )
+            new GitlabAccessTokenAcquireStrategy.Configuration(
+                "123456", // projectId
+                System.getenv("GITLAB_ACCESS_TOKEN"), // accessToken
+                "https://gitlab.com", // baseUrl
+                "main" // branch
             )
-	]
-	generatorName = "spring"
+        ),
+        new LocalConfigurationAcquireStrategy(
+            new BaseStrategyConfiguration(
+                ["org", "example"], // apiGenerationTargetDirectoryList
+                new SingleFile( // mainSpecificationFilePath
+                    ["bank", "clients", "v1"],
+                    "spec.yaml"
+                ),
+                [ // additionalSpecificationFilePaths
+                    new MultipleFiles(
+                        ["bank", "common", "v1"],
+                        ["common.yaml"]
+                    ),
+                    new MultipleFiles(
+                        ["bank", "api", "v1"],
+                        ["firstSpec.yaml", "secondSpec.yaml"]
+                    )
+                ]
+            ),
+            new LocalConfigurationAcquireStrategy.Configuration(
+                ".../example-project" // relativePath
+            )
+        ),
+        new GitCloneAcquireStrategy(
+            new BaseStrategyConfiguration(
+                ["org", "example"], // apiGenerationTargetDirectoryList
+                new SingleFile( // mainSpecificationFilePath
+                    ["bank", "clients", "v1"],
+                    "spec.yaml"
+                ),
+                [ // additionalSpecificationFilePaths
+                    new MultipleFiles(
+                        ["bank", "common", "v1"],
+                        ["common.yaml"]
+                    ),
+                    new MultipleFiles(
+                        ["bank", "api", "v1"],
+                        ["firstSpec.yaml", "secondSpec.yaml"]
+                    )
+                ]
+            ),
+            new GitCloneAcquireStrategy.Configuration(
+                "git@gitlab.com:company/example/example-project.git", // gitCloneUrl
+                "example-project", // repositoryName
+                "main" // branchName
+            )
+        ),
+        new FallbackAcquireStrategy(
+            new BaseStrategyConfiguration(
+                ["org", "example"], // apiGenerationTargetDirectoryList
+                new SingleFile( // mainSpecificationFilePath
+                    ["bank", "clients", "v1"],
+                    "spec.yaml"
+                ),
+                [ // additionalSpecificationFilePaths
+                    new MultipleFiles(
+                        ["bank", "common", "v1"],
+                        ["common.yaml"]
+                    ),
+                    new MultipleFiles(
+                        ["bank", "api", "v1"],
+                        ["firstSpec.yaml", "secondSpec.yaml"]
+                    )
+                ]
+            ),
+            new FallbackAcquireStrategy.Configuration(
+                [ // strategyConfigurations
+                    new GitlabAccessTokenAcquireStrategy.Configuration(...),
+                    new LocalConfigurationAcquireStrategy.Configuration(...),
+                    new GitCloneAcquireStrategy.Configuration(...)
+                ]
+            )
+        )
+    ]
+    generatorName = "spring"
     skipValidateSpec = true
     importMappings = [
         "StreamingResponseBody": "org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody",
@@ -245,11 +331,11 @@ contractorPluginConfiguration {
 ```
 
 
-Parameter table:
+# Parameters:
 
 | Parameter        | Description                                                                                                                                                                                                                                                   |
 |------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| contracts        | Specified by class `GitlabAccessTokenAcquireStrategy`, `LocalConfigurationAcquireStrategy`, `GitCloneAcquireStrategy` or `FallbackAcquireStrategy`. Every definied contract creates specification with interfaces.                                            |
+| contracts        | Specified by [Strategy classes](#Strategy-classes). Every definied contract creates specification classes.                                                                                                                                                    |
 | skipValidateSpec | Whether or not to skip validating the input spec prior to generation. By default, invalid specifications will result in an error. For more see https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md |
 | generatorName    | Generator name for OpenAPI plugin configuration. Available generators: https://openapi-generator.tech/docs/generators/#server-generators                                                                                                                      |
 | importMappings   | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                                                                |
@@ -257,58 +343,96 @@ Parameter table:
 | configOptions    | Overrides default OpenAPI plugin configuration. Both can be found at https://openapi-generator.tech/docs/generators/kotlin/ and https://openapi-generator.tech/docs/generators/kotlin-spring/.                                                                |
 
 
-Class table:
 
-| Class name                         | Description                                                                                                            |
-|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| LocalConfigurationAcquireStrategy  | Used for retrieving API contract from local directory                                                                  |
-| GitlabAccessTokenAcquireStrategy   | Used for retrieving API contract from the gitlab repository by downloading it using an access token                    |
-| GitCloneAcquireStrategy            | Used for retrieving API contract from any git repository by cloning it using local git settings                        |
-| FallbackAcquireStrategy            | Used for retrieving API contract using the first encountered strategy from the given list that is capable of doing so  |
+# Classes
 
+## Strategy classes
 
-BaseStrategyConfiguration:
+| Class name                         | Description                                                                                                                                                |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| LocalConfigurationAcquireStrategy  | Used for retrieving API contract files from [SOURCE PROJECT](#Legend) placed in local directory                                                            |
+| GitlabAccessTokenAcquireStrategy   | Used for retrieving API contract files from [SOURCE PROJECT](#Legend) placed in gitlab repository, by downloading it using an access token                 |
+| GitCloneAcquireStrategy            | Used for retrieving API contract files from [SOURCE PROJECT](#Legend) placed in any git repository, by cloning it using local git settings                 |
+| FallbackAcquireStrategy            | Used for retrieving API contract files from [SOURCE PROJECT](#Legend) using the first encountered strategy from the given list that is capable of doing so |
 
-| Attribute                        | Description                                                                                                                                                                |
-|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| generatedApiBaseDirectoryList    | Base directories list where generated api should be placed                                                                                                                 |
-| specificationSourceDirectoryList | Directories list where API contract file (`specificationFileName`) should be looked. Also used for directory structure generation inside (`generatedApiBaseDirectoryList`) |
-| mainSpecificationFileName        | Main API contract file name                                                                                                                                                |
-| additionalSpecificationFileNames | List of additional API contract files names. It should be ordered relative to the references(`$ref`) inside these files                                                    |
+## Configuration classes
 
-
-LocalConfigurationAcquireStrategy.Configuration:
-
-| Attribute                  | Description                                      |
-|----------------------------|--------------------------------------------------|
-| baseConfiguration          | Base configuration (`BaseStrategyConfiguration`) |
-| configuration.relativePath | Path of locally stored API contract file         |
+| Class name                                                                                          | Description                                                                                                            |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| [BaseStrategyConfiguration](#BaseStrategyConfiguration)                                             | Main configuration that is used in every strategy                                                                      |
+| [SingleFile](#SingleFile)                                                                           | Class used for introducing single directory path and file full name (name + extension), to strategy configuration      |
+| [MultipleFiles](#MultipleFiles)                                                                     | Class used for introducing multiple files full names (name + extension) in single directory, to strategy configuration |
+| [LocalConfigurationAcquireStrategy.Configuration](#LocalConfigurationAcquireStrategy-Configuration) | Additional configuration that is used by `LocalConfigurationAcquireStrategy`                                           |
+| [GitlabAccessTokenAcquireStrategy.Configuration](#GitlabAccessTokenAcquireStrategy-Configuration)   | Additional configuration that is used by `GitlabAccessTokenAcquireStrategy`                                            |
+| [GitCloneAcquireStrategy.Configuration](#GitCloneAcquireStrategy-Configuration)                     | Additional configuration that is used by `GitCloneAcquireStrategy`                                                     |
+| [FallbackAcquireStrategy.Configuration](#FallbackAcquireStrategy-Configuration)                     | Additional configuration that is used by `FallbackAcquireStrategy`                                                     |
 
 
-GitlabAccessTokenAcquireStrategy.Configuration:
+### SingleFile:
 
-| Attribute                 | Description                                                              |
-|---------------------------|--------------------------------------------------------------------------|
-| baseConfiguration         | Base configuration (`BaseStrategyConfiguration`)                         |
-| configuration.projectId   | Gitlab project id                                                        |
-| configuration.accessToken | Gitlab access token                                                      |
-| configuration.baseUrl     | Gitlab base url (default: https://gitlab.com)                            |
-| configuration.branch      | Branch of the project repository from which the file is to be downloaded |
+| Attribute     | Description                                                                                    |
+|---------------|------------------------------------------------------------------------------------------------|
+| directoryList | Directory path list in [SOURCE PROJECT](#Legend) where api specification file should be looked |
+| fileFullName  | Api specification file full name placed in `directoryList`                                     |
 
 
-GitCloneAcquireStrategy.Configuration:
+### MultipleFiles:
 
-| Attribute                    | Description                                                          |
-|------------------------------|----------------------------------------------------------------------|
-| baseConfiguration            | Base configuration (`BaseStrategyConfiguration`)                     |
-| configuration.gitCloneUrl    | Git url for cloning                                                  |
-| configuration.repositoryName | Name of project repository                                           |
-| configuration.branchName     | Branch of the project repository from which the file is to be cloned |
+| Attribute     | Description                                                                                     |
+|---------------|-------------------------------------------------------------------------------------------------|
+| directoryList | Directory path list in [SOURCE PROJECT](#Legend) where api specification files should be looked |
+| fileFullNames | List of api specification file full names placed in `directoryList`                             |
 
 
-FallbackAcquireStrategy.Configuration:
+### BaseStrategyConfiguration:
+
+| Attribute                        | Description                                                                                                                                                       |
+|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| apiGenerationTargetDirectoryList | Base directory path list in [TARGET PROJECT](#Legend) where generated api should be generated                                                                     |
+| mainSpecificationFilePath        | Main API contract file path and name [SingleFile](#SingleFile)                                                                                                    |
+| additionalSpecificationFilePaths | List of additional API contract files names and paths [MultipleFiles](#MultipleFiles). It should be ordered relative to the references(`$ref`) inside these files |
+
+
+### LocalConfigurationAcquireStrategy Configuration:
+
+| Attribute                  | Description                                                                |
+|----------------------------|----------------------------------------------------------------------------|
+| baseConfiguration          | Base configuration [BaseStrategyConfiguration](#BaseStrategyConfiguration) |
+| configuration.relativePath | Path of locally stored API contract [SOURCE PROJECT](#Legend)              |
+
+
+### GitlabAccessTokenAcquireStrategy Configuration:
+
+| Attribute                 | Description                                                                |
+|---------------------------|----------------------------------------------------------------------------|
+| baseConfiguration         | Base configuration [BaseStrategyConfiguration](#BaseStrategyConfiguration) |
+| configuration.projectId   | Gitlab project id                                                          |
+| configuration.accessToken | Gitlab access token                                                        |
+| configuration.baseUrl     | Gitlab base url of [SOURCE PROJECT](#Legend) (default: https://gitlab.com) |
+| configuration.branch      | Branch of the project repository from which the file is to be downloaded   |
+
+
+### GitCloneAcquireStrategy Configuration:
+
+| Attribute                    | Description                                                                |
+|------------------------------|----------------------------------------------------------------------------|
+| baseConfiguration            | Base configuration [BaseStrategyConfiguration](#BaseStrategyConfiguration) |
+| configuration.gitCloneUrl    | Git url for cloning                                                        |
+| configuration.repositoryName | Name of [SOURCE PROJECT](#Legend) repository                               |
+| configuration.branchName     | Branch of the project repository from which the file is to be cloned       |
+
+
+### FallbackAcquireStrategy Configuration:
 
 | Attribute                            | Description                                                                                                               |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| baseConfiguration                    | Base configuration (`BaseStrategyConfiguration`)                                                                          |
+| baseConfiguration                    | Base configuration [BaseStrategyConfiguration](#BaseStrategyConfiguration)                                                |
 | configuration.strategyConfigurations | A list of strategies configurations that defines the order of checking which of them can be used to obtain a API contract |
+
+
+# Legend
+
+| Attribute      | Description                                      |
+|----------------|--------------------------------------------------|
+| SOURCE PROJECT | Project where api specification files are stored |
+| TARGET PROJECT | Project where api classes will be generated      |

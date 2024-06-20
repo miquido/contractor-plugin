@@ -2,6 +2,8 @@ package com.miquido.plugin.contractor.strategy
 
 import com.miquido.plugin.contractor.Constant
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.SingleFile
+import com.miquido.plugin.contractor.strategy.configuration.toDirectoryPath
 import com.miquido.plugin.contractor.util.DependsOnSingleTaskAction
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -13,9 +15,9 @@ class GitCloneAcquireStrategy(
     private val configuration: Configuration
 ) : ContractSpecificationAcquireStrategy(baseConfiguration) {
 
-    private val gitCloneTaskName = "${taskName}GitCloneTask"
-    private val copyToSpecificationDirTaskNames = createFilesNamesToTaskNamesMap("CopyToSpecificationDirTask")
-    private val deleteGitClonedRepoTaskName = "${taskName}DeleteGitClonedRepoTask"
+    private val gitCloneTaskName = "${taskNamePrefix}GitCloneTask"
+    private val copyToSpecificationDirTaskNames = createFilesToTaskNamesMap("CopyToSpecificationDirTask")
+    private val deleteGitClonedRepoTaskName = "${taskNamePrefix}DeleteGitClonedRepoTask"
 
     override val specificationAcquireTasksOrder = buildList {
         this.add(gitCloneTaskName)
@@ -33,11 +35,11 @@ class GitCloneAcquireStrategy(
             Exec::class.java,
             cloneGitRepository()
         )
-        copyToSpecificationDirTaskNames.forEach { (fileName, taskName) ->
+        copyToSpecificationDirTaskNames.forEach { (file, taskName) ->
             project.tasks.register(
                 taskName,
                 Copy::class.java,
-                copyToSpecificationDir(fileName)
+                copyToSpecificationDir(file)
             )
         }
         project.tasks.register(
@@ -69,10 +71,11 @@ class GitCloneAcquireStrategy(
             }
         }
 
-    private fun copyToSpecificationDir(fileName: String): Copy.() -> Unit = {
+    private fun copyToSpecificationDir(file: SingleFile): Copy.() -> Unit = {
         Constant.run {
             val projectDirectory = project.layout.projectDirectory
-            from(projectDirectory.dir(rootDir).dir(configuration.repositoryName).dir(specificationSourceDirectoryPath).file(fileName))
+            val specificationSourceDirectoryPath = file.directoryList.toDirectoryPath()
+            from(projectDirectory.dir(rootDir).dir(configuration.repositoryName).dir(specificationSourceDirectoryPath).file(file.fileFullName))
             into(projectDirectory.dir(specificationDir).dir(specificationSourceDirectoryPath))
         }
     }

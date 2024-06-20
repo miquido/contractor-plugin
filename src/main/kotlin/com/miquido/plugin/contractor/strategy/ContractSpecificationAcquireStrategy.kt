@@ -3,11 +3,12 @@ package com.miquido.plugin.contractor.strategy
 import com.miquido.plugin.contractor.Constant
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
+import com.miquido.plugin.contractor.strategy.configuration.toDirectoryPath
+import com.miquido.plugin.contractor.strategy.configuration.toPackagesPath
 import com.miquido.plugin.contractor.util.DependsOnSingleTaskAction
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
@@ -15,21 +16,12 @@ abstract class ContractSpecificationAcquireStrategy(
     private val baseConfiguration: BaseStrategyConfiguration
 ) {
 
-    protected val taskName = baseConfiguration.specificationSourceDirectoryList
-        .joinToString(
-            separator = "",
-            postfix = baseConfiguration.mainSpecificationFileName.sanitizeFileName().capitalized()
-        ) {
-            it.capitalized()
-        }
-    private val generateTaskName = "${taskName}GenerateTask"
-    protected val specificationSourceDirectoryPath = baseConfiguration.specificationSourceDirectoryList.joinToString("/")
-    protected val specificationSourceDirectoryPackages = baseConfiguration.specificationSourceDirectoryList.joinToString(".")
-    protected val generatedApiBaseDirectoryPath = baseConfiguration.generatedApiBaseDirectoryList.joinToString("/")
-    protected val generatedApiBaseDirectoryPackages = baseConfiguration.generatedApiBaseDirectoryList.joinToString(".")
-    protected val generatedApiDirectoryPackages = "${generatedApiBaseDirectoryPackages}.${specificationSourceDirectoryPackages}"
+    protected val taskNamePrefix = baseConfiguration.mainSpecificationFilePath.toCapitalizedCamelCase()
 
-    protected val allSpecificationFileNames = baseConfiguration.additionalSpecificationFileNames + baseConfiguration.mainSpecificationFileName
+    private val generateTaskName = "${taskNamePrefix}GenerateTask"
+
+    private val allSpecificationFiles = baseConfiguration.additionalSpecificationFilePaths.flatMap { it.toSingleFileList() } +
+        baseConfiguration.mainSpecificationFilePath
 
     protected abstract val specificationAcquireTasksOrder: List<String>
     abstract fun canBeUsed(project: Project): Boolean
@@ -56,28 +48,28 @@ abstract class ContractSpecificationAcquireStrategy(
 
     open fun getTasksNames(project: Project) = specificationAcquireTasksOrder + generateTaskName
 
-    private fun String.sanitizeFileName() = this.substringBefore(".")
-
-    protected fun createFilesNamesToTaskNamesMap(taskNameSuffix: String) = allSpecificationFileNames.associateWith{ fileName ->
-        "${taskName}${fileName.sanitizeFileName().capitalized()}${taskNameSuffix}"
+    protected fun createFilesToTaskNamesMap(taskNameSuffix: String) = allSpecificationFiles.associateWith{ singleFile ->
+        "${taskNamePrefix}${singleFile.toCapitalizedCamelCase()}${taskNameSuffix}"
     }
 
     private fun generateInterfaceTask(
         configuration: ContractorConfiguration
     ): GenerateTask.() -> Unit = {
+        val mainSpecificationSourceDirectoryPath = baseConfiguration.mainSpecificationFilePath.directoryList.toDirectoryPath()
+        val apiGenerationTargetDirectoryPackages = baseConfiguration.apiGenerationTargetDirectoryList.toPackagesPath()
         Constant.run {
             group = JavaPlugin.CLASSES_TASK_NAME
             generatorName.set(configuration.generatorName)
-            inputSpec.set("${project.projectDir}/$specificationDir/$specificationSourceDirectoryPath/${baseConfiguration.mainSpecificationFileName}")
+            inputSpec.set("${project.projectDir}/$specificationDir/$mainSpecificationSourceDirectoryPath/${baseConfiguration.mainSpecificationFilePath.fileFullName}")
             outputDir.set(
                 project.layout.projectDirectory
-                    .dir("$interfaceDir/$specificationSourceDirectoryPath")
+                    .dir("$interfaceDir/$mainSpecificationSourceDirectoryPath")
                     .toString()
             )
-            apiPackage.set("${generatedApiDirectoryPackages}.api")
-            modelPackage.set("${generatedApiDirectoryPackages}.dto")
+            apiPackage.set("${apiGenerationTargetDirectoryPackages}.api")
+            modelPackage.set("${apiGenerationTargetDirectoryPackages}.dto")
             configOptions.set(
-                defaultConfigOptions + configuration.configOptions + mapOf("basePackage" to generatedApiDirectoryPackages)
+                defaultConfigOptions + configuration.configOptions + mapOf("basePackage" to apiGenerationTargetDirectoryPackages)
             )
             skipValidateSpec.set(configuration.skipValidateSpec)
             importMappings.set(
@@ -91,12 +83,12 @@ abstract class ContractSpecificationAcquireStrategy(
                 .getByType(KotlinJvmProjectExtension::class.java)
                 .sourceSets.getByName("main")
                 .kotlin.srcDir(
-                    project.layout.projectDirectory.dir("$interfaceDir/$specificationSourceDirectoryPath/src/main/kotlin")
+                    project.layout.projectDirectory.dir("$interfaceDir/$mainSpecificationSourceDirectoryPath/src/main/kotlin")
                 )
             project.extensions.getByType(JavaPluginExtension::class.java)
                 .sourceSets.getByName("main")
                 .java.srcDir(
-                    project.layout.projectDirectory.dir("$interfaceDir/$specificationSourceDirectoryPath/src/main/java")
+                    project.layout.projectDirectory.dir("$interfaceDir/$mainSpecificationSourceDirectoryPath/src/main/java")
                 )
             templateDir.set("${project.projectDir}/$configurationDir")
         }
