@@ -88,11 +88,11 @@ configure<ContractorConfiguration> {
                 listOf("org", "example"),
                 listOf("bank", "clients", "v1"),
                 "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
-            )
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+            ),
             GitlabAccessTokenAcquireStrategy.Configuration(
                 "123456",
-                System.getenv("GITLAB_ACCESS_TOKEN")
+                System.getenv("GITLAB_ACCESS_TOKEN"),
                "https://gitlab.com",
                "main"
             )
@@ -102,8 +102,8 @@ configure<ContractorConfiguration> {
                 listOf("org", "example"),
                 listOf("bank", "clients", "v1"),
                 "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
-            )
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+            ),
             LocalConfigurationAcquireStrategy.Configuration(
                 ".../example-project"
             )
@@ -113,8 +113,8 @@ configure<ContractorConfiguration> {
                 listOf("org", "example"),
                 listOf("bank", "clients", "v1"),
                 "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
-            )
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+            ),
             GitCloneAcquireStrategy.Configuration(
                 "git@gitlab.com:company/example/example-project.git",
                 "example-project",
@@ -126,8 +126,8 @@ configure<ContractorConfiguration> {
                 listOf("org", "example"),
                 listOf("bank", "clients", "v1"),
                 "spec.yaml",
-                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml"),
-            )
+                listOf("common.yaml", "firstDomainSpec.yaml", "secondDomainSpec.yaml")
+            ),
             FallbackAcquireStrategy.Configuration(
                 listOf(
                     GitlabAccessTokenAcquireStrategy.Configuration(...),
@@ -175,21 +175,21 @@ contractorPluginConfiguration {
                     ["org", "example"],
                     ["bank", "clients", "v1"],
                     "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
                 ),
                 new GitlabAccessTokenAcquireStrategy.Configuration(
                     "123456",
-                    System.getenv("GITLAB_ACCESS_TOKEN")
+                    System.getenv("GITLAB_ACCESS_TOKEN"),
                     "https://gitlab.com",
                     "main"
-                ),
+                )
             ),
             new LocalConfigurationAcquireStrategy(
                 new BaseStrategyConfiguration(
                     ["org", "example"],
                     ["bank", "clients", "v1"],
                     "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
                 ),
                 new LocalConfigurationAcquireStrategy.Configuration(
                     ".../example-project"
@@ -200,11 +200,11 @@ contractorPluginConfiguration {
                     ["org", "example"],
                     ["bank", "clients", "v1"],
                     "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
                 ),
                 new GitCloneAcquireStrategy.Configuration(
                     "git@gitlab.com:company/example/example-project.git",
-                    "example-project"
+                    "example-project",
                     "main"
                 )
             ),
@@ -213,8 +213,8 @@ contractorPluginConfiguration {
                     ["org", "example"],
                     ["bank", "clients", "v1"],
                     "spec.yaml",
-                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"],
-                )
+                    ["specCommon.yaml", "specTwo.yaml", "specThree.yaml"]
+                ),
                 new FallbackAcquireStrategy.Configuration(
                     [
                         new GitlabAccessTokenAcquireStrategy.Configuration(...),
