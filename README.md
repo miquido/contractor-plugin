@@ -436,3 +436,12 @@ contractorPluginConfiguration {
 |----------------|--------------------------------------------------|
 | SOURCE PROJECT | Project where api specification files are stored |
 | TARGET PROJECT | Project where api classes will be generated      |
+
+# FAQ
+
+1. What do this plugin use to generate API files?
+> [Openapi generator plugin](https://openapi-generator.tech/docs/installation/)
+
+2. How can I generate separate API interfaces files in My [TARGET PROJECT](#Legend) for each endpoint?
+> API interfaces files are generated based on [tags](https://swagger.io/docs/specification/grouping-operations-with-tags/) parameter declared on each path element(if [useTags](#Parameters) configuration is enabled).
+> If two or more path have the same tag, then all of them will be placed in the same file.
