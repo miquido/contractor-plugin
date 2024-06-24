@@ -445,3 +445,6 @@ contractorPluginConfiguration {
 2. How can I generate separate API interfaces files in My [TARGET PROJECT](#Legend) for each endpoint?
 > API interfaces files are generated based on [tags](https://swagger.io/docs/specification/grouping-operations-with-tags/) parameter declared on each path element(if [useTags](#Parameters) configuration is enabled).
 > If two or more path have the same tag, then all of them will be placed in the same file.
+
+3. In generated API methods names include name of their API, what can I do to remove it? What can I do, to declare my own names of methods?
+> API methods names can be declared with parameter [operationId](https://swagger.io/docs/specification/paths-and-operations/) parameter declared on each path element.
