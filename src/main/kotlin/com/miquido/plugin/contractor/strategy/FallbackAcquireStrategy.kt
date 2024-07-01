@@ -1,6 +1,7 @@
 package com.miquido.plugin.contractor.strategy
 
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
+import com.miquido.plugin.contractor.task.TaskName
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
 import org.gradle.api.Project
 
@@ -21,24 +22,24 @@ class FallbackAcquireStrategy(
         fallbackStrategies.first { it.canBeUsed(project) }.registerTasks(project, configuration)
     }
 
-    override fun prepareTasksOrder(project: Project, dependsOn: String) {
+    override fun prepareTasksOrder(project: Project, dependsOn: TaskName) {
         fallbackStrategies.first { it.canBeUsed(project) }.prepareTasksOrder(project, dependsOn)
     }
 
     override fun getTasksNames(project: Project) =
         fallbackStrategies.first { it.canBeUsed(project) }.getTasksNames(project)
 
-    override val specificationAcquireTasksOrder = emptyList<String>()
+    override val specificationAcquireTasksOrder = emptyList<TaskName>()
 
     override fun registerSpecificationAcquireTasks(project: Project) {
         // There is no need for implementation
     }
 
-    override fun prepareSpecificationAcquireTasksOrder(project: Project, dependsOn: String) {
+    override fun prepareSpecificationAcquireTasksOrder(project: Project, dependsOn: TaskName) {
         // There is no need for implementation
     }
 
-    data class Configuration (
+    data class Configuration @JvmOverloads constructor(
         val strategyConfigurations: List<ContractSpecificationAcquireStrategy.Configuration<*>>
     ): ContractSpecificationAcquireStrategy.Configuration<FallbackAcquireStrategy> {
         override fun createStrategy(baseConfiguration: BaseStrategyConfiguration): FallbackAcquireStrategy =

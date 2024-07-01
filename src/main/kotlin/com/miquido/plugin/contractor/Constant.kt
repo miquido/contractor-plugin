@@ -1,15 +1,13 @@
 package com.miquido.plugin.contractor
 
+import java.nio.file.Path
+import kotlin.io.path.Path
+
 
 object Constant {
-    const val rootDir = "build/generated/api-generator"
-    const val configurationDir = "$rootDir/configuration"
-    const val specificationDir = "$rootDir/specification"
-    const val interfaceDir = "$rootDir/"
-    const val tempDirectoryName = "temp"
+    val rootDir: Path = Path("build").resolve("generated").resolve("api-generator")
+    val specificationDir: Path = rootDir.resolve("specification")
 
-    // https://openapi-generator.tech/docs/generators/kotlin/
-    // https://openapi-generator.tech/docs/generators/kotlin-spring/
     val defaultConfigOptions: Map<String, String> = mapOf(
         "interfaceOnly" to "true", // Whether to generate only API interface stubs without the server files.
         "useSpringBoot3" to "true", // Generate code and provide dependencies for use with Spring Boot 3.x. (Use jakarta instead of javax in import)

@@ -10,6 +10,7 @@ import java.net.URI
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("com.github.gmazzo.buildconfig") version "5.3.5"
+    //id("de.undercouch.download") version "5.6.0"
     id("maven-publish")
     id("java-gradle-plugin")
     id("signing")

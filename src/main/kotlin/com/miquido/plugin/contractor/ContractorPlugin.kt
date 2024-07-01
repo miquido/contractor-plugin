@@ -3,14 +3,16 @@
  */
 package com.miquido.plugin.contractor
 
-import com.miquido.contractor_plugin.BuildConfig
 import com.miquido.plugin.contractor.configuration.ContractorConfiguration
-import com.miquido.plugin.contractor.util.DependsOnMultipleTasksAction
-import java.io.File
+import com.miquido.plugin.contractor.extension.dir
+import com.miquido.plugin.contractor.extension.normalizedPath
+import com.miquido.plugin.contractor.extension.register
+import com.miquido.plugin.contractor.task.DependsOnMultipleTasksAction
+import com.miquido.plugin.contractor.task.TaskName
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.Exec
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /**
@@ -20,7 +22,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 open class ContractorPlugin : Plugin<Project> {
 
     private val cleanupTaskName = "cleanupTask"
-    private val copyGeneratorPluginResourcesTaskName = "copyGeneratorPluginResourcesTask"
+    private val prepareApiGeneratorDirectory = TaskName("prepareApiGeneratorDirectory")
 
     private lateinit var configuration: ContractorConfiguration
 
@@ -34,7 +36,11 @@ open class ContractorPlugin : Plugin<Project> {
     }
 
     private fun registerTasks(project: Project, configuration: ContractorConfiguration) {
-        project.tasks.register(copyGeneratorPluginResourcesTaskName, Copy::class.java, copyGeneratorPluginResourcesTask())
+        project.tasks.register(
+            prepareApiGeneratorDirectory,
+            Exec::class.java,
+            prepareApiGeneratorDirectory()
+        )
         configuration.contracts.forEach { contract ->
             contract.registerTasks(project, configuration)
         }
@@ -42,7 +48,7 @@ open class ContractorPlugin : Plugin<Project> {
     }
 
     private fun prepareTasksOrder(project: Project, configuration: ContractorConfiguration){
-        var dependentTaskName = copyGeneratorPluginResourcesTaskName
+        var dependentTaskName = prepareApiGeneratorDirectory
         configuration.contracts.forEach { contract ->
             contract.prepareTasksOrder(project, dependentTaskName)
             dependentTaskName = contract.getTasksNames(project).last()
@@ -53,43 +59,27 @@ open class ContractorPlugin : Plugin<Project> {
             DependsOnMultipleTasksAction(
                 project,
                 buildList {
-                    add(copyGeneratorPluginResourcesTaskName)
+                    add(prepareApiGeneratorDirectory)
                     addAll(configuration.contracts.flatMap { it.getTasksNames(project) })
                 }
             )
         )
+
         project.tasks.withType(KotlinCompile::class.java) {
             it.dependsOn(cleanupTaskName)
         }
     }
 
-    private fun copyGeneratorPluginResourcesTask(): Copy.() -> Unit = {
+    private fun prepareApiGeneratorDirectory(): Exec.() -> Unit = {
         Constant.run {
-            val tempDirectory = File(project.layout.projectDirectory.dir(tempDirectoryName).asFile.absolutePath).apply {
-                mkdirs()
-            }
-
-            // TODO: copy all resources
-            project.plugins.getPlugin(BuildConfig.APP_NAME)
-                .javaClass
-                .classLoader
-                .getResourceAsStream("configuration/apiInterface.mustache")
-                .let { resource ->
-                    File(tempDirectory.absolutePath + File.separator + "apiInterface.mustache").let {
-                        resource?.copyTo(it.outputStream())
-                    }
-                }
-
-            from(project.layout.projectDirectory.dir("./$tempDirectoryName"))
-            into(project.layout.projectDirectory.dir("./$configurationDir"))
+            executable = "mkdir"
+            args = listOf("-p", rootDir.normalizedPath())
         }
     }
 
-    fun cleanup(): Delete.() -> Unit = {
+    private fun cleanup(): Delete.() -> Unit = {
         Constant.run {
-            delete(project.layout.projectDirectory.dir(tempDirectoryName))
             delete(project.layout.projectDirectory.dir(specificationDir))
-            delete(project.layout.projectDirectory.dir(configurationDir))
         }
     }
 }

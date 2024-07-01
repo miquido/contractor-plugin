@@ -1,46 +1,36 @@
 package com.miquido.plugin.contractor.strategy.configuration
 
-import org.gradle.configurationcache.extensions.capitalized
+import java.nio.file.Path
+import kotlin.io.path.Path
 
-data class BaseStrategyConfiguration (
-    val apiGenerationTargetDirectoryList: List<String>,
-    val mainSpecificationFilePath: SingleFile,
-    val additionalSpecificationFilePaths: List<MultipleFiles> = emptyList()
-)
-
-typealias DirectoryList = List<String>
-typealias FileFullName = String
-
-data class SingleFile (
-    val directoryList: DirectoryList,
-    val fileFullName: FileFullName
+data class BaseStrategyConfiguration @JvmOverloads constructor(
+    val apiGenerationTargetPackagePath: String,
+    val mainSpecificationFilePath: Path,
+    val additionalSpecificationFilePaths: List<Path> = emptyList()
 ) {
 
-    fun toCapitalizedCamelCase() =
-        directoryList.toCapitalizedCamelCase() + fileFullName.substringBefore(".").capitalized()
-}
+    @JvmOverloads constructor(
+        apiGenerationTargetPackagePath: String,
+        mainSpecificationFilePath: String,
+        additionalSpecificationFilePaths: Map<String, List<String>> = emptyMap()
+    ): this(
+        apiGenerationTargetPackagePath,
+        Path(mainSpecificationFilePath),
+        additionalSpecificationFilePaths.flatMap { (pathString, fileNames) ->
+            val path = Path(pathString)
+            fileNames.map { fileName -> path.resolve(fileName) }
 
-data class MultipleFiles (
-    val directoryList: DirectoryList,
-    val fileFullNames: List<FileFullName>
-) {
-
-    fun toSingleFileList() =
-        fileFullNames.map {
-            SingleFile(
-                directoryList,
-                it
-            )
         }
+    )
+
+    @Deprecated("Use other constructor.")
+    @JvmOverloads constructor(
+        apiGenerationTargetDirectoryList: List<String>,
+        mainSpecificationFilePath: SingleFile,
+        additionalSpecificationFilePaths: List<MultipleFiles> = emptyList()
+    ): this(
+        apiGenerationTargetDirectoryList.joinToString("."),
+        mainSpecificationFilePath.asPath(),
+        additionalSpecificationFilePaths.toSingleFilesList().map { it.asPath() }
+    )
 }
-
-fun DirectoryList.toCapitalizedCamelCase() =
-    this.joinToString("") {
-        it.capitalized()
-    }
-
-fun DirectoryList.toDirectoryPath() =
-    this.joinToString("/")
-
-fun DirectoryList.toPackagesPath() =
-    this.joinToString(".")
