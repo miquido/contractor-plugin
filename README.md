@@ -12,7 +12,7 @@ Add plugin with clause:
 
 ```
 plugins {
-  id("com.miquido.contractor-plugin") version "1.1.3"
+  id("com.miquido.contractor-plugin") version "1.1.4"
 }
 ```
 
@@ -37,7 +37,7 @@ pluginManagement {
 
 ```
 plugins {
-    id 'com.miquido.contractor-plugin' version '1.1.3'
+    id 'com.miquido.contractor-plugin' version '1.1.4'
 }
 ```
 
@@ -56,7 +56,7 @@ pluginManagement {
 }
 ```
 
-Plugin will automatically generate Kotlin interfaces based on configuration.
+Plugin will automatically generate Kotlin/Java interfaces based on configuration.
 
 ## Configuration
 
@@ -68,8 +68,6 @@ Example:
 
 ```
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
-import com.miquido.plugin.contractor.strategy.configuration.SingleFile
-import com.miquido.plugin.contractor.strategy.configuration.MultipleFiles
 import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
@@ -81,20 +79,11 @@ configure<ContractorConfiguration> {
     contracts = listOf(
         GitlabAccessTokenAcquireStrategy(
             BaseStrategyConfiguration(
-                apiGenerationTargetDirectoryList = listOf("org", "example"),
-                mainSpecificationFilePath = SingleFile(
-                    listOf("bank", "clients", "v1"),
-                    "spec.yaml"
-                ),
-                ladditionalSpecificationFilePaths = istOf(
-                    MultipleFiles(
-                        listOf("bank", "common", "v1"),
-                        listOf("common.yaml")
-                    ),
-                    MultipleFiles(
-                        listOf("bank", "api", "v1"),
-                        listOf("firstSpec.yaml", "secondSpec.yaml")
-                    )
+                apiGenerationTargetPackagePath = "org.example",
+                mainSpecificationFilePath = "bank/clients/v1/spec.yaml",
+                additionalSpecificationFilePaths = mapOf(
+                    "bank/common/v1" to listOf("common.yaml"),
+                    "bank/api/v1" to listOf("firstSpec.yaml", "secondSpec.yaml")
                 )
             ),
             GitlabAccessTokenAcquireStrategy.Configuration(
@@ -106,20 +95,11 @@ configure<ContractorConfiguration> {
         ),
         LocalConfigurationAcquireStrategy(
             BaseStrategyConfiguration(
-                apiGenerationTargetDirectoryList = listOf("org", "example"),
-                mainSpecificationFilePath = SingleFile(
-                    listOf("bank", "clients", "v1"),
-                    "spec.yaml"
-                ),
-                additionalSpecificationFilePaths = listOf(
-                    MultipleFiles(
-                        listOf("bank", "common", "v1"),
-                        listOf("common.yaml")
-                    ),
-                    MultipleFiles(
-                        listOf("bank", "api", "v1"),
-                        listOf("firstSpec.yaml", "secondSpec.yaml")
-                    )
+                apiGenerationTargetPackagePath = "org.example",
+                mainSpecificationFilePath = "bank/clients/v1/spec.yaml",
+                additionalSpecificationFilePaths = mapOf(
+                    "bank/common/v1" to listOf("common.yaml"),
+                    "bank/api/v1" to listOf("firstSpec.yaml", "secondSpec.yaml")
                 )
             ),
             LocalConfigurationAcquireStrategy.Configuration(
@@ -128,20 +108,11 @@ configure<ContractorConfiguration> {
         ),
         GitCloneAcquireStrategy(
             BaseStrategyConfiguration(
-                apiGenerationTargetDirectoryList = listOf("org", "example"),
-                mainSpecificationFilePath = SingleFile(
-                    listOf("bank", "clients", "v1"),
-                    "spec.yaml"
-                ),
-                additionalSpecificationFilePaths = listOf(
-                    MultipleFiles(
-                        listOf("bank", "common", "v1"),
-                        listOf("common.yaml")
-                    ),
-                    MultipleFiles(
-                        listOf("bank", "api", "v1"),
-                        listOf("firstSpec.yaml", "secondSpec.yaml")
-                    )
+                apiGenerationTargetPackagePath = "org.example",
+                mainSpecificationFilePath = "bank/clients/v1/spec.yaml",
+                additionalSpecificationFilePaths = mapOf(
+                    "bank/common/v1" to listOf("common.yaml"),
+                    "bank/api/v1" to listOf("firstSpec.yaml", "secondSpec.yaml")
                 )
             ),
             GitCloneAcquireStrategy.Configuration(
@@ -152,20 +123,11 @@ configure<ContractorConfiguration> {
         ),
         FallbackAcquireStrategy(
             BaseStrategyConfiguration(
-                apiGenerationTargetDirectoryList = listOf("org", "example"),
-                mainSpecificationFilePath = SingleFile(
-                    listOf("bank", "clients", "v1"),
-                    "spec.yaml"
-                ),
-                additionalSpecificationFilePaths = listOf(
-                    MultipleFiles(
-                        listOf("bank", "common", "v1"),
-                        listOf("common.yaml")
-                    ),
-                    MultipleFiles(
-                        listOf("bank", "api", "v1"),
-                        listOf("firstSpec.yaml", "secondSpec.yaml")
-                    )
+                apiGenerationTargetPackagePath = "org.example",
+                mainSpecificationFilePath = "bank/clients/v1/spec.yaml",
+                additionalSpecificationFilePaths = mapOf(
+                    "bank/common/v1" to listOf("common.yaml"),
+                    "bank/api/v1" to listOf("firstSpec.yaml", "secondSpec.yaml")
                 )
             ),
             FallbackAcquireStrategy.Configuration(
@@ -201,8 +163,6 @@ configure<ContractorConfiguration> {
 
 ```
 import com.miquido.plugin.contractor.strategy.configuration.BaseStrategyConfiguration
-import com.miquido.plugin.contractor.strategy.configuration.SingleFile
-import com.miquido.plugin.contractor.strategy.configuration.MultipleFiles
 import com.miquido.plugin.contractor.strategy.LocalConfigurationAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitlabAccessTokenAcquireStrategy
 import com.miquido.plugin.contractor.strategy.GitCloneAcquireStrategy
@@ -214,20 +174,11 @@ contractorPluginConfiguration {
 	contracts = [
         new GitlabAccessTokenAcquireStrategy(
             new BaseStrategyConfiguration(
-                ["org", "example"], // apiGenerationTargetDirectoryList
-                new SingleFile( // mainSpecificationFilePath
-                    ["bank", "clients", "v1"],
-                    "spec.yaml"
-                ),
-                [ // additionalSpecificationFilePaths
-                    new MultipleFiles(
-                        ["bank", "common", "v1"],
-                        ["common.yaml"]
-                    ),
-                    new MultipleFiles(
-                        ["bank", "api", "v1"],
-                        ["firstSpec.yaml", "secondSpec.yaml"]
-                    )
+                "org.example", // apiGenerationTargetPackagePath
+                "bank/clients/v1/spec.yaml", // mainSpecificationFilePath
+                [
+                    "bank/common/v1": ["common.yaml"],
+                    "bank/api/v1": ["firstSpec.yaml", "secondSpec.yaml"],
                 ]
             ),
             new GitlabAccessTokenAcquireStrategy.Configuration(
@@ -239,20 +190,11 @@ contractorPluginConfiguration {
         ),
         new LocalConfigurationAcquireStrategy(
             new BaseStrategyConfiguration(
-                ["org", "example"], // apiGenerationTargetDirectoryList
-                new SingleFile( // mainSpecificationFilePath
-                    ["bank", "clients", "v1"],
-                    "spec.yaml"
-                ),
-                [ // additionalSpecificationFilePaths
-                    new MultipleFiles(
-                        ["bank", "common", "v1"],
-                        ["common.yaml"]
-                    ),
-                    new MultipleFiles(
-                        ["bank", "api", "v1"],
-                        ["firstSpec.yaml", "secondSpec.yaml"]
-                    )
+                "org.example", // apiGenerationTargetPackagePath
+                "bank/clients/v1/spec.yaml", // mainSpecificationFilePath
+                [
+                    "bank/common/v1": ["common.yaml"],
+                    "bank/api/v1": ["firstSpec.yaml", "secondSpec.yaml"],
                 ]
             ),
             new LocalConfigurationAcquireStrategy.Configuration(
@@ -261,20 +203,11 @@ contractorPluginConfiguration {
         ),
         new GitCloneAcquireStrategy(
             new BaseStrategyConfiguration(
-                ["org", "example"], // apiGenerationTargetDirectoryList
-                new SingleFile( // mainSpecificationFilePath
-                    ["bank", "clients", "v1"],
-                    "spec.yaml"
-                ),
-                [ // additionalSpecificationFilePaths
-                    new MultipleFiles(
-                        ["bank", "common", "v1"],
-                        ["common.yaml"]
-                    ),
-                    new MultipleFiles(
-                        ["bank", "api", "v1"],
-                        ["firstSpec.yaml", "secondSpec.yaml"]
-                    )
+                "org.example", // apiGenerationTargetPackagePath
+                "bank/clients/v1/spec.yaml", // mainSpecificationFilePath
+                [
+                    "bank/common/v1": ["common.yaml"],
+                    "bank/api/v1": ["firstSpec.yaml", "secondSpec.yaml"],
                 ]
             ),
             new GitCloneAcquireStrategy.Configuration(
@@ -285,20 +218,11 @@ contractorPluginConfiguration {
         ),
         new FallbackAcquireStrategy(
             new BaseStrategyConfiguration(
-                ["org", "example"], // apiGenerationTargetDirectoryList
-                new SingleFile( // mainSpecificationFilePath
-                    ["bank", "clients", "v1"],
-                    "spec.yaml"
-                ),
-                [ // additionalSpecificationFilePaths
-                    new MultipleFiles(
-                        ["bank", "common", "v1"],
-                        ["common.yaml"]
-                    ),
-                    new MultipleFiles(
-                        ["bank", "api", "v1"],
-                        ["firstSpec.yaml", "secondSpec.yaml"]
-                    )
+                "org.example", // apiGenerationTargetPackagePath
+                "bank/clients/v1/spec.yaml", // mainSpecificationFilePath
+                [
+                    "bank/common/v1": ["common.yaml"],
+                    "bank/api/v1": ["firstSpec.yaml", "secondSpec.yaml"],
                 ]
             ),
             new FallbackAcquireStrategy.Configuration(
@@ -335,7 +259,7 @@ contractorPluginConfiguration {
 
 | Parameter        | Description                                                                                                                                                                                                                                                   |
 |------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| contracts        | Specified by [Strategy classes](#Strategy-classes). Every definied contract creates specification classes.                                                                                                                                                    |
+| contracts        | Specified by [Strategy classes](#Strategy-classes). Every defined contract creates specification classes.                                                                                                                                                     |
 | skipValidateSpec | Whether or not to skip validating the input spec prior to generation. By default, invalid specifications will result in an error. For more see https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md |
 | generatorName    | Generator name for OpenAPI plugin configuration. Available generators: https://openapi-generator.tech/docs/generators/#server-generators                                                                                                                      |
 | importMappings   | Custom types mapping configuration. For more, see https://openapi-generator.tech/docs/usage/#type-mappings-and-import-mappings                                                                                                                                |
@@ -360,15 +284,13 @@ contractorPluginConfiguration {
 | Class name                                                                                          | Description                                                                                                            |
 |-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | [BaseStrategyConfiguration](#BaseStrategyConfiguration)                                             | Main configuration that is used in every strategy                                                                      |
-| [SingleFile](#SingleFile)                                                                           | Class used for introducing single directory path and file full name (name + extension), to strategy configuration      |
-| [MultipleFiles](#MultipleFiles)                                                                     | Class used for introducing multiple files full names (name + extension) in single directory, to strategy configuration |
 | [LocalConfigurationAcquireStrategy.Configuration](#LocalConfigurationAcquireStrategy-Configuration) | Additional configuration that is used by `LocalConfigurationAcquireStrategy`                                           |
 | [GitlabAccessTokenAcquireStrategy.Configuration](#GitlabAccessTokenAcquireStrategy-Configuration)   | Additional configuration that is used by `GitlabAccessTokenAcquireStrategy`                                            |
 | [GitCloneAcquireStrategy.Configuration](#GitCloneAcquireStrategy-Configuration)                     | Additional configuration that is used by `GitCloneAcquireStrategy`                                                     |
 | [FallbackAcquireStrategy.Configuration](#FallbackAcquireStrategy-Configuration)                     | Additional configuration that is used by `FallbackAcquireStrategy`                                                     |
 
 
-### SingleFile:
+### ~~SingleFile~~ (deprecated: use constructors with Strings):
 
 | Attribute     | Description                                                                                    |
 |---------------|------------------------------------------------------------------------------------------------|
@@ -376,7 +298,7 @@ contractorPluginConfiguration {
 | fileFullName  | Api specification file full name placed in `directoryList`                                     |
 
 
-### MultipleFiles:
+### ~~MultipleFiles~~ (deprecated: use constructors with Maps):
 
 | Attribute     | Description                                                                                     |
 |---------------|-------------------------------------------------------------------------------------------------|
@@ -386,11 +308,11 @@ contractorPluginConfiguration {
 
 ### BaseStrategyConfiguration:
 
-| Attribute                        | Description                                                                                                                                                       |
-|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| apiGenerationTargetDirectoryList | Base directory path list in [TARGET PROJECT](#Legend) where generated api should be generated                                                                     |
-| mainSpecificationFilePath        | Main API contract file path and name [SingleFile](#SingleFile)                                                                                                    |
-| additionalSpecificationFilePaths | List of additional API contract files names and paths [MultipleFiles](#MultipleFiles). It should be ordered relative to the references(`$ref`) inside these files |
+| Attribute                        | Description                                                                                                                                                                                                                                                 |
+|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| apiGenerationTargetPackagePath   | Base package path list in [TARGET PROJECT](#Legend) where generated api should be generated                                                                                                                                                                 |
+| mainSpecificationFilePath        | Main API contract file path and name [SingleFile](#SingleFile)                                                                                                                                                                                              |
+| additionalSpecificationFilePaths | OPTIONAL FIELD. List of additional API contract files names and paths [MultipleFiles](#MultipleFiles). It should be ordered relative to the references(`$ref`) inside these files. If not introduced, plugin will try to detect and acquire necessary files |
 
 
 ### LocalConfigurationAcquireStrategy Configuration:
